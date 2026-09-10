@@ -7,13 +7,18 @@ import {
   Radio, 
   ChevronRight, 
   PhoneCall, 
-  KeyRound,
-  ExternalLink,
-  Cpu,
-  Activity
+  KeyRound, 
+  ExternalLink, 
+  Cpu, 
+  Activity,
+  LayoutDashboard,
+  User,
+  Sparkles
 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 export default function Navbar({ currentPage, setCurrentPage, openLoginModal, openEmergencyModal }) {
+  const { currentUser } = useAuth();
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -25,7 +30,7 @@ export default function Navbar({ currentPage, setCurrentPage, openLoginModal, op
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const navItems = [
+  const baseNavItems = [
     { id: 'home', label: 'Home' },
     { id: 'services', label: 'What We Provide' },
     { id: 'about', label: 'Goals & Vision' },
@@ -33,15 +38,27 @@ export default function Navbar({ currentPage, setCurrentPage, openLoginModal, op
     { id: 'contact', label: 'Contact Us' },
   ];
 
+  const navItems = currentUser 
+    ? [...baseNavItems, { id: 'dashboard', label: 'Dashboard', isSpecial: true }]
+    : baseNavItems;
+
   const handleNavClick = (id) => {
     setCurrentPage(id);
     setMobileMenuOpen(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const roleBadgeColors = {
+    super_developer: 'bg-purple-500/20 text-purple-300 border-purple-500/40',
+    admin_manager: 'bg-amber-500/20 text-amber-300 border-amber-500/40',
+    senior_manager: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40',
+    company_developer: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
+    employee: 'bg-rose-500/20 text-rose-300 border-rose-500/40',
+  };
+
   return (
     <>
-      {/* Top Threat Telemetry / Status Bar - Full Browser Width */}
+      {/* Top Threat Telemetry / Status Bar */}
       <div className="w-full bg-[#05070B] border-b border-cyan-950/40 text-[10px] sm:text-xs py-1.5 px-3 sm:px-6 md:px-10 lg:px-14 xl:px-20 text-slate-400 font-mono flex items-center justify-between z-50 relative">
         <div className="flex items-center gap-2 sm:gap-3 overflow-hidden">
           <div className="flex items-center gap-1.5 shrink-0">
@@ -75,7 +92,7 @@ export default function Navbar({ currentPage, setCurrentPage, openLoginModal, op
         </div>
       </div>
 
-      {/* Main Navigation Bar - Expands to 100% Full Browser Width */}
+      {/* Main Navigation Bar */}
       <nav 
         className={`w-full sticky top-0 z-40 transition-all duration-300 ${
           isScrolled 
@@ -122,13 +139,16 @@ export default function Navbar({ currentPage, setCurrentPage, openLoginModal, op
                 <button
                   key={item.id}
                   onClick={() => handleNavClick(item.id)}
-                  className={`px-3.5 xl:px-5 py-1.5 rounded-full text-xs xl:text-sm font-medium transition-all duration-200 cursor-pointer ${
+                  className={`px-3.5 xl:px-5 py-1.5 rounded-full text-xs xl:text-sm font-medium transition-all duration-200 cursor-pointer flex items-center gap-1.5 ${
                     active
-                      ? 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 shadow-[0_0_15px_rgba(0,240,255,0.2)]'
+                      ? 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 shadow-[0_0_15px_rgba(0,240,255,0.2)] font-semibold'
+                      : item.isSpecial
+                      ? 'text-cyan-300 bg-cyan-950/40 hover:bg-cyan-900/60 border border-cyan-500/30'
                       : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
                   }`}
                 >
-                  {item.label}
+                  {item.isSpecial && <LayoutDashboard className="w-3.5 h-3.5 text-cyan-400" />}
+                  <span>{item.label}</span>
                 </button>
               );
             })}
@@ -145,25 +165,37 @@ export default function Navbar({ currentPage, setCurrentPage, openLoginModal, op
               <span>Breach Response</span>
             </button>
 
-            <button
-              onClick={openLoginModal}
-              className="relative group px-3.5 md:px-4 py-2 rounded-xl text-xs font-semibold text-white bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 transition-all duration-200 shadow-md shadow-cyan-600/20 hover:shadow-cyan-500/30 flex items-center gap-1.5 md:gap-2 cursor-pointer border border-cyan-400/40"
-            >
-              <KeyRound className="w-3.5 h-3.5 text-cyan-200" />
-              <span>Client Portal</span>
-              <ChevronRight className="w-3 h-3 text-cyan-200 group-hover:translate-x-0.5 transition-transform" />
-            </button>
+            {currentUser ? (
+              /* If logged in: Go to Dashboard CTA */
+              <button
+                onClick={() => handleNavClick('dashboard')}
+                className="relative group px-3.5 md:px-4 py-2 rounded-xl text-xs font-semibold text-white bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 transition-all duration-200 shadow-md shadow-cyan-600/20 hover:shadow-cyan-500/30 flex items-center gap-2 cursor-pointer border border-cyan-400/40"
+              >
+                <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>
+                <span>Dashboard ({currentUser.roleLabel.split(' ')[0]})</span>
+                <ChevronRight className="w-3 h-3 text-cyan-200 group-hover:translate-x-0.5 transition-transform" />
+              </button>
+            ) : (
+              /* If not logged in: Client Portal login button */
+              <button
+                onClick={openLoginModal}
+                className="relative group px-3.5 md:px-4 py-2 rounded-xl text-xs font-semibold text-white bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 transition-all duration-200 shadow-md shadow-cyan-600/20 hover:shadow-cyan-500/30 flex items-center gap-1.5 md:gap-2 cursor-pointer border border-cyan-400/40"
+              >
+                <KeyRound className="w-3.5 h-3.5 text-cyan-200" />
+                <span>Client Portal</span>
+                <ChevronRight className="w-3 h-3 text-cyan-200 group-hover:translate-x-0.5 transition-transform" />
+              </button>
+            )}
           </div>
 
           {/* Mobile Menu & Quick Login Buttons */}
           <div className="flex sm:hidden items-center gap-2">
             <button
-              onClick={openLoginModal}
+              onClick={currentUser ? () => handleNavClick('dashboard') : openLoginModal}
               className="px-2.5 py-1.5 rounded-lg bg-cyan-500/15 border border-cyan-500/30 text-cyan-300 text-xs font-semibold flex items-center gap-1"
-              aria-label="Client Login"
             >
-              <KeyRound className="w-3.5 h-3.5" />
-              <span>Login</span>
+              {currentUser ? <LayoutDashboard className="w-3.5 h-3.5" /> : <KeyRound className="w-3.5 h-3.5" />}
+              <span>{currentUser ? 'Portal' : 'Login'}</span>
             </button>
 
             <button
@@ -176,7 +208,7 @@ export default function Navbar({ currentPage, setCurrentPage, openLoginModal, op
           </div>
         </div>
 
-        {/* Mobile Navigation Drawer with Smooth Responsive Typography */}
+        {/* Mobile Navigation Drawer */}
         {mobileMenuOpen && (
           <div className="lg:hidden w-full bg-[#0a0e17] border-b border-cyan-500/20 px-4 sm:px-6 pt-3 pb-6 space-y-3 animate-fadeIn">
             <div className="grid gap-1.5 pt-1">
@@ -189,10 +221,15 @@ export default function Navbar({ currentPage, setCurrentPage, openLoginModal, op
                     className={`flex items-center justify-between w-full px-4 py-3 rounded-xl text-sm sm:text-base font-medium transition-colors ${
                       active
                         ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 font-bold shadow-[0_0_15px_rgba(0,240,255,0.15)]'
+                        : item.isSpecial
+                        ? 'bg-cyan-950/40 text-cyan-300 border border-cyan-500/20'
                         : 'text-slate-300 hover:bg-slate-800/70 hover:text-white'
                     }`}
                   >
-                    <span>{item.label}</span>
+                    <div className="flex items-center gap-2">
+                      {item.isSpecial && <LayoutDashboard className="w-4 h-4 text-cyan-400" />}
+                      <span>{item.label}</span>
+                    </div>
                     <ChevronRight className={`w-4 h-4 ${active ? 'text-cyan-400' : 'text-slate-600'}`} />
                   </button>
                 );
@@ -214,12 +251,16 @@ export default function Navbar({ currentPage, setCurrentPage, openLoginModal, op
               <button
                 onClick={() => {
                   setMobileMenuOpen(false);
-                  openLoginModal();
+                  if (currentUser) {
+                    handleNavClick('dashboard');
+                  } else {
+                    openLoginModal();
+                  }
                 }}
                 className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 text-white text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 shadow-lg shadow-cyan-600/25"
               >
                 <KeyRound className="w-4 h-4" />
-                <span>Enter Enterprise Client Portal</span>
+                <span>{currentUser ? 'Open Enterprise Dashboard' : 'Enter Enterprise Client Portal'}</span>
               </button>
             </div>
           </div>

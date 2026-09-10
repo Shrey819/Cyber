@@ -14,8 +14,10 @@ import {
   Copy, 
   Check
 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 export default function Footer({ setCurrentPage, openLoginModal, openEmergencyModal }) {
+  const { currentUser } = useAuth();
   const [newsletterEmail, setNewsletterEmail] = useState('');
   const [newsletterSubscribed, setNewsletterSubscribed] = useState(false);
   const [copiedPgp, setCopiedPgp] = useState(false);
@@ -255,10 +257,10 @@ export default function Footer({ setCurrentPage, openLoginModal, openEmergencyMo
               <span>GLOBAL SENSOR GRID: ACTIVE</span>
             </span>
             <button 
-              onClick={openLoginModal}
+              onClick={currentUser ? () => navigateTo('dashboard') : openLoginModal}
               className="text-cyan-400 hover:text-cyan-300 underline underline-offset-4 cursor-pointer"
             >
-              Enterprise Sign In
+              {currentUser ? `Dashboard (${currentUser.roleLabel.split(' ')[0]})` : 'Enterprise Sign In'}
             </button>
           </div>
         </div>
