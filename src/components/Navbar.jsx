@@ -178,7 +178,7 @@ export default function Navbar({ currentPage, setCurrentPage, openLoginModal, op
             ) : (
               /* If not logged in: Client Portal login button */
               <button
-                onClick={openLoginModal}
+                onClick={() => handleNavClick('login')}
                 className="relative group px-3.5 md:px-4 py-2 rounded-xl text-xs font-semibold text-white bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 transition-all duration-200 shadow-md shadow-cyan-600/20 hover:shadow-cyan-500/30 flex items-center gap-1.5 md:gap-2 cursor-pointer border border-cyan-400/40"
               >
                 <KeyRound className="w-3.5 h-3.5 text-cyan-200" />
@@ -191,7 +191,7 @@ export default function Navbar({ currentPage, setCurrentPage, openLoginModal, op
           {/* Mobile Menu & Quick Login Buttons */}
           <div className="flex sm:hidden items-center gap-2">
             <button
-              onClick={currentUser ? () => handleNavClick('dashboard') : openLoginModal}
+              onClick={currentUser ? () => handleNavClick('dashboard') : () => handleNavClick('login')}
               className="px-2.5 py-1.5 rounded-lg bg-cyan-500/15 border border-cyan-500/30 text-cyan-300 text-xs font-semibold flex items-center gap-1"
             >
               {currentUser ? <LayoutDashboard className="w-3.5 h-3.5" /> : <KeyRound className="w-3.5 h-3.5" />}

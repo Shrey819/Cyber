@@ -5,7 +5,9 @@ import {
   INITIAL_EMPLOYEE_SEARCHES, 
   INITIAL_COMPANY_API_KEYS, 
   INITIAL_COMPANY_VULNERABILITIES,
-  DEMO_PERSONAS 
+  DEMO_PERSONAS,
+  ROLE_CREDENTIALS,
+  detectRoleFromInput
 } from '../data/mockAuthData';
 
 const AuthContext = createContext(null);
@@ -127,51 +129,142 @@ export function AuthProvider({ children }) {
     return () => clearInterval(interval);
   }, []);
 
-  // Login handler
-  const login = (email, password) => {
-    const foundUser = users.find(u => u.email.toLowerCase() === email.toLowerCase());
+  // Common Login handler: User ID and Password decide role 1, 2, 3, 4, or 5
+  const login = (userIdOrEmail, password) => {
+    const rawInput = String(userIdOrEmail || '').trim();
+    const rawPass = String(password || '').trim();
+
+    if (!rawInput) {
+      return { success: false, error: 'User ID is required.' };
+    }
+    if (!rawPass) {
+      return { success: false, error: 'Password is required.' };
+    }
+
+    const cleanInput = rawInput.toLowerCase();
+
+    // 1. Check against the 5 master roles (Role 1 to 5)
+    const matchedRole = ROLE_CREDENTIALS.find(r => 
+      r.acceptedUserIds.some(id => id.toLowerCase() === cleanInput) ||
+      String(r.roleNumber) === cleanInput
+    );
+
+    if (matchedRole) {
+      // Validate password
+      const isPasswordValid = 
+        matchedRole.acceptedPasswords.some(p => p.toLowerCase() === rawPass.toLowerCase()) ||
+        rawPass === matchedRole.defaultPassword ||
+        rawPass === 'password123' ||
+        rawPass === 'admin123' ||
+        rawPass === '123456' ||
+        rawPass === String(matchedRole.roleNumber);
+
+      if (!isPasswordValid) {
+        return { 
+          success: false, 
+          error: `Invalid password for Role ${matchedRole.roleNumber} (${matchedRole.roleLabel}). Tip: use password123`,
+          roleNumber: matchedRole.roleNumber,
+          roleLabel: matchedRole.roleLabel
+        };
+      }
+
+      // Find user matching role
+      let targetUser = users.find(u => u.id === matchedRole.userRefId) || 
+                       users.find(u => u.role === matchedRole.roleKey) ||
+                       INITIAL_USERS.find(u => u.role === matchedRole.roleKey);
+
+      if (targetUser) {
+        const updatedUser = { 
+          ...targetUser, 
+          status: 'online', 
+          lastActive: 'Just now',
+          sessionCreated: new Date().toISOString()
+        };
+        setCurrentUser(updatedUser);
+        setUsers(prev => prev.map(u => u.id === targetUser.id ? updatedUser : u));
+        return { 
+          success: true, 
+          user: updatedUser, 
+          roleNumber: matchedRole.roleNumber,
+          roleLabel: matchedRole.roleLabel 
+        };
+      }
+    }
+
+    // 2. Check if input matches an existing user email or name in users list
+    const foundUser = users.find(u => 
+      u.email.toLowerCase() === cleanInput || 
+      u.id.toLowerCase() === cleanInput ||
+      u.name.toLowerCase() === cleanInput
+    );
+
     if (foundUser) {
+      if (rawPass.length < 3) {
+        return { success: false, error: 'Password must be at least 3 characters.' };
+      }
       const updatedUser = { ...foundUser, status: 'online', lastActive: 'Just now' };
       setCurrentUser(updatedUser);
       setUsers(prev => prev.map(u => u.id === foundUser.id ? updatedUser : u));
-      return { success: true, user: updatedUser };
+      
+      const roleIndex = ['super_developer', 'admin_manager', 'senior_manager', 'company_developer', 'employee'].indexOf(foundUser.role);
+      const roleNum = roleIndex !== -1 ? roleIndex + 1 : 5;
+
+      return { 
+        success: true, 
+        user: updatedUser, 
+        roleNumber: roleNum,
+        roleLabel: updatedUser.roleLabel 
+      };
     }
 
-    // If new email, infer tenant from domain
-    const domain = email.split('@')[1] || '';
-    const matchedCompany = companies.find(c => c.domain.toLowerCase() === domain.toLowerCase());
+    // 3. Fallback for new corporate domain email
+    if (rawInput.includes('@')) {
+      const domain = rawInput.split('@')[1] || '';
+      const matchedCompany = companies.find(c => c.domain.toLowerCase() === domain.toLowerCase());
+      const isInternalVortex = domain.includes('vortex');
+      const role = isInternalVortex ? 'super_developer' : matchedCompany ? 'employee' : 'employee';
+      const roleNum = isInternalVortex ? 1 : 5;
 
-    const isInternalVortex = domain.includes('vortex');
-    const role = isInternalVortex ? 'super_developer' : matchedCompany ? 'employee' : 'employee';
+      const newUser = {
+        id: `usr-${Date.now()}`,
+        name: rawInput.split('@')[0].replace('.', ' ').toUpperCase(),
+        email: rawInput,
+        role,
+        roleLabel: isInternalVortex ? 'Super Developer' : matchedCompany ? 'Employee' : 'Independent Researcher',
+        roleCategory: matchedCompany ? 'Company Staff' : 'Individual User',
+        companyId: matchedCompany ? matchedCompany.id : null,
+        companyName: matchedCompany ? matchedCompany.name : 'Independent (Individual Account)',
+        isIndividual: !matchedCompany && !isInternalVortex,
+        avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
+        status: 'online',
+        lastActive: 'Just now',
+        location: 'Enterprise Remote Node',
+        ipAddress: '172.56.21.90',
+        mfaEnabled: true,
+        securityClearance: 'LEVEL-2 AUTHENTICATED',
+        sessionCreated: new Date().toISOString(),
+      };
 
-    const newUser = {
-      id: `usr-${Date.now()}`,
-      name: email.split('@')[0].replace('.', ' ').toUpperCase(),
-      email,
-      role,
-      roleLabel: isInternalVortex ? 'Super Developer' : matchedCompany ? 'Employee' : 'Independent Researcher',
-      roleCategory: matchedCompany ? 'Company Staff' : 'Individual User',
-      companyId: matchedCompany ? matchedCompany.id : null,
-      companyName: matchedCompany ? matchedCompany.name : 'Independent (Individual Account)',
-      isIndividual: !matchedCompany && !isInternalVortex,
-      avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
-      status: 'online',
-      lastActive: 'Just now',
-      location: 'Enterprise Remote Node',
-      ipAddress: '172.56.21.90',
-      mfaEnabled: true,
-      securityClearance: 'LEVEL-2 AUTHENTICATED',
-      sessionCreated: new Date().toISOString(),
+      setUsers(prev => [newUser, ...prev]);
+      setCurrentUser(newUser);
+      return { 
+        success: true, 
+        user: newUser, 
+        roleNumber: roleNum, 
+        roleLabel: newUser.roleLabel 
+      };
+    }
+
+    // 4. Invalid User ID
+    return { 
+      success: false, 
+      error: 'User ID not recognized. Enter a valid Role 1, 2, 3, 4, or 5 identifier (e.g. superdev, adminmgr, seniormgr, companydev, employee, or 1-5).' 
     };
-
-    setUsers(prev => [newUser, ...prev]);
-    setCurrentUser(newUser);
-    return { success: true, user: newUser };
   };
 
   // Quick switch between the 5 demo roles
   const quickLogin = (roleKey) => {
-    const targetUser = users.find(u => u.role === roleKey);
+    const targetUser = users.find(u => u.role === roleKey) || INITIAL_USERS.find(u => u.role === roleKey);
     if (targetUser) {
       const updatedUser = { ...targetUser, status: 'online', lastActive: 'Just now' };
       setCurrentUser(updatedUser);
@@ -303,6 +396,8 @@ export function AuthProvider({ children }) {
       systemMetrics,
       systemLogs,
       demoPersonas: DEMO_PERSONAS,
+      roleCredentials: ROLE_CREDENTIALS,
+      detectRole: detectRoleFromInput,
       login,
       quickLogin,
       logout,

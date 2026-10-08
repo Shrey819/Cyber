@@ -23,43 +23,59 @@ import {
 import { useAuth } from '../context/AuthContext';
 
 export default function LoginModal({ isOpen, onClose, onLoginSuccess }) {
-  const { login, quickLogin, demoPersonas } = useAuth();
+  const { login, roleCredentials = [], detectRole } = useAuth();
 
-  const [authMethod, setAuthMethod] = useState('demo'); // 'demo', 'credentials', 'sso', 'passkey'
-  const [email, setEmail] = useState('alex.dev@vortex.internal');
-  const [password, setPassword] = useState('••••••••••••');
+  const [authMethod, setAuthMethod] = useState('credentials'); // default to 'credentials'
+  const [userId, setUserId] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [authenticating, setAuthenticating] = useState(false);
-  const [authSuccess, setAuthSuccess] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [authSuccess, setAuthSuccess] = useState(null);
   const [passkeyStatus, setPasskeyStatus] = useState('idle');
 
   if (!isOpen) return null;
 
-  const handleQuickDemoLogin = (roleKey) => {
-    setAuthenticating(true);
-    setTimeout(() => {
-      setAuthenticating(false);
-      const user = quickLogin(roleKey);
-      if (onLoginSuccess) {
-        onLoginSuccess(user);
-      }
-      onClose();
-    }, 600);
-  };
+  const detectedRole = detectRole ? detectRole(userId) : null;
 
   const handleCredentialsLogin = (e) => {
     e.preventDefault();
+    setErrorMessage('');
+    setAuthSuccess(null);
+
+    if (!userId.trim()) {
+      setErrorMessage('Please enter your User ID or Role number (1-5).');
+      return;
+    }
+    if (!password.trim()) {
+      setErrorMessage('Please enter your password.');
+      return;
+    }
+
     setAuthenticating(true);
     setTimeout(() => {
+      const res = login(userId, password);
       setAuthenticating(false);
-      const res = login(email, password);
+
       if (res.success) {
-        if (onLoginSuccess) {
-          onLoginSuccess(res.user);
-        }
-        onClose();
+        setAuthSuccess(res);
+        setTimeout(() => {
+          if (onLoginSuccess) {
+            onLoginSuccess(res.user);
+          }
+          onClose();
+        }, 600);
+      } else {
+        setErrorMessage(res.error || 'Authentication failed. Please verify credentials.');
       }
-    }, 800);
+    }, 600);
+  };
+
+  const handleFillCredentials = (role) => {
+    setUserId(role.defaultUserId);
+    setPassword(role.defaultPassword);
+    setErrorMessage('');
+    setAuthSuccess(null);
   };
 
   const handleSsoLogin = (provider) => {
@@ -208,35 +224,64 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }) {
             </div>
           )}
 
-          {/* TAB 2: CREDENTIALS FORM */}
+          {/* TAB 2: COMMON CREDENTIALS FORM */}
           {authMethod === 'credentials' && (
             <form onSubmit={handleCredentialsLogin} className="space-y-4">
+              {errorMessage && (
+                <div className="p-2.5 rounded-xl bg-rose-950/40 border border-rose-500/40 text-rose-300 text-xs flex items-start gap-2 animate-fadeIn">
+                  <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+                  <span>{errorMessage}</span>
+                </div>
+              )}
+
+              {authSuccess && (
+                <div className="p-3 rounded-xl bg-emerald-950/40 border border-emerald-500/40 text-emerald-300 text-xs flex items-center gap-2.5 animate-fadeIn">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <div>
+                    <span className="font-bold text-white">Authenticated as Role {authSuccess.roleNumber}: </span>
+                    <span>{authSuccess.roleLabel}</span>
+                  </div>
+                </div>
+              )}
+
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">Corporate or Individual Email</label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-xs font-medium text-slate-300">User ID / Handle / Role (1-5)</label>
+                  {detectedRole && (
+                    <span className={`text-[10px] font-mono px-2 py-0.2 rounded border font-semibold animate-fadeIn ${detectedRole.colorBadge}`}>
+                      Role {detectedRole.roleNumber}: {detectedRole.roleLabel}
+                    </span>
+                  )}
+                </div>
                 <input
-                  type="email"
+                  type="text"
                   required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="name@company.com or alex.dev@vortex.internal"
+                  value={userId}
+                  onChange={(e) => {
+                    setUserId(e.target.value);
+                    if (errorMessage) setErrorMessage('');
+                  }}
+                  placeholder="e.g. superdev, adminmgr, seniormgr, companydev, employee, or 1-5"
                   className="w-full bg-slate-950/80 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400 font-mono"
+                  autoFocus
                 />
               </div>
 
               <div>
                 <div className="flex justify-between items-center mb-1">
-                  <label className="text-xs font-medium text-slate-300">Master Cryptographic Passphrase</label>
-                  <a href="#reset" onClick={(e) => e.preventDefault()} className="text-[11px] text-cyan-400 hover:underline">
-                    Hardware Reset?
-                  </a>
+                  <label className="text-xs font-medium text-slate-300">Password</label>
+                  <span className="text-[10px] font-mono text-slate-400">Default: password123</span>
                 </div>
                 <div className="relative">
                   <input
                     type={showPassword ? 'text' : 'password'}
                     required
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••••••••••"
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      if (errorMessage) setErrorMessage('');
+                    }}
+                    placeholder="Enter password"
                     className="w-full bg-slate-950/80 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400 pr-9 font-mono"
                   />
                   <button
@@ -249,25 +294,21 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }) {
                 </div>
               </div>
 
-              {/* Quick Preset Selector Suggestions */}
+              {/* Quick Fill Buttons for Roles 1 to 5 */}
               <div className="p-3 bg-slate-950/60 rounded-xl border border-slate-800/80 text-[11px] font-mono space-y-1.5">
-                <span className="text-slate-500 block">Click to autofill test accounts:</span>
-                <div className="flex flex-wrap gap-1.5">
-                  {[
-                    { label: 'Super Dev', em: 'alex.dev@vortex.internal' },
-                    { label: 'Admin Mgr', em: 'sarah.admin@vortex.internal' },
-                    { label: 'Sr. Mgr', em: 'marcus.mgr@apextech.com' },
-                    { label: 'Co. Dev', em: 'david.dev@apextech.com' },
-                    { label: 'Employee', em: 'sophia.emp@apextech.com' },
-                    { label: 'Individual', em: 'carlos.researcher@freelance.io' },
-                  ].map(preset => (
+                <span className="text-slate-400 block font-semibold text-[10px]">Autofill Credentials for Roles 1 to 5:</span>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
+                  {roleCredentials.map(role => (
                     <button
-                      key={preset.label}
+                      key={role.roleNumber}
                       type="button"
-                      onClick={() => setEmail(preset.em)}
-                      className="px-2 py-0.5 bg-slate-900 hover:bg-slate-850 text-cyan-300 rounded border border-slate-700 text-[10px] cursor-pointer"
+                      onClick={() => handleFillCredentials(role)}
+                      className="px-2 py-1 bg-slate-900 hover:bg-slate-850 hover:border-cyan-500/50 text-slate-300 hover:text-white rounded-lg border border-slate-800 text-[10px] cursor-pointer flex items-center gap-1.5 transition-colors"
                     >
-                      {preset.label}
+                      <span className="w-3.5 h-3.5 rounded bg-cyan-500/20 text-cyan-300 flex items-center justify-center font-bold text-[9px]">
+                        {role.roleNumber}
+                      </span>
+                      <span className="truncate">{role.roleLabel.split(' ')[0]}</span>
                     </button>
                   ))}
                 </div>
@@ -281,11 +322,11 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }) {
                 {authenticating ? (
                   <>
                     <span className="w-3.5 h-3.5 border-2 border-slate-950 border-t-transparent rounded-full animate-spin"></span>
-                    <span>Validating Clearance & Handshake...</span>
+                    <span>Resolving Role 1-5 Clearance...</span>
                   </>
                 ) : (
                   <>
-                    <span>Enter Role Dashboard</span>
+                    <span>Sign In to Assigned Role</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </>
                 )}
