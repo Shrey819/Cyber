@@ -146,30 +146,30 @@ export default function EmployeeDashboard() {
   return (
     <div className="space-y-6">
       {/* Hero Header */}
-      <div className="p-5 sm:p-6 bg-[#0B0F19] border border-rose-500/20 rounded-2xl relative overflow-hidden shadow-xl">
+      <div className="p-3.5 xs:p-5 sm:p-6 bg-[#0B0F19] border border-rose-500/20 rounded-2xl relative overflow-hidden shadow-xl">
         <div className="absolute top-0 right-0 w-96 h-96 bg-rose-600/10 rounded-full blur-3xl pointer-events-none"></div>
 
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 relative z-10">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 sm:gap-4 relative z-10">
           <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-rose-500/20 text-rose-300 border border-rose-500/40 font-bold">
+            <div className="flex items-center gap-1.5 sm:gap-2 mb-1 flex-wrap">
+              <span className="px-2 py-0.5 rounded-full text-[9px] xs:text-[10px] font-mono bg-rose-500/20 text-rose-300 border border-rose-500/40 font-bold">
                 EMPLOYEE DEFENSE SUITE
               </span>
-              <span className="text-xs text-rose-300 font-mono">
+              <span className="text-[11px] sm:text-xs text-rose-300 font-mono">
                 Workstation: {currentUser?.name} ({currentUser?.companyName})
               </span>
             </div>
-            <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+            <h1 className="text-lg xs:text-xl sm:text-2xl font-black text-white tracking-tight">
               Personal Security Utilities & Credentials Hardening
             </h1>
-            <p className="text-xs text-slate-400 mt-1 max-w-2xl">
+            <p className="text-[11px] xs:text-xs text-slate-400 mt-1 max-w-2xl leading-relaxed">
               Equipped with high-entropy cryptographic password generation, real-time brute-force analyzers, 2-Factor hardware tokens, and workstation compliance checklists.
             </p>
           </div>
 
           {/* Personal Security Score Badge */}
-          <div className="flex items-center gap-3 p-3 bg-slate-900/80 border border-slate-800 rounded-xl">
-            <div className="w-10 h-10 rounded-lg bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center font-black font-mono text-emerald-400 text-sm">
+          <div className="flex items-center gap-3 p-2.5 sm:p-3 bg-slate-900/80 border border-slate-800 rounded-xl self-start lg:self-auto">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center font-black font-mono text-emerald-400 text-xs sm:text-sm shrink-0">
               {healthPercent}%
             </div>
             <div className="text-left">
@@ -183,10 +183,10 @@ export default function EmployeeDashboard() {
       </div>
 
       {/* Grid: Password Generator & Password Strength Analyzer */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         
         {/* Tool 1: Interactive Password Generator */}
-        <div className="p-5 bg-[#0B0F19] border border-slate-800 rounded-2xl space-y-5">
+        <div className="p-3.5 xs:p-4 sm:p-5 bg-[#0B0F19] border border-slate-800 rounded-2xl space-y-4 sm:space-y-5">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-bold text-white flex items-center gap-2">
               <KeyRound className="w-4 h-4 text-cyan-400" />

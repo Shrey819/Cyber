@@ -86,33 +86,33 @@ export default function SeniorManagerDashboard() {
       )}
 
       {/* Hero Header */}
-      <div className="p-5 sm:p-6 bg-[#0B0F19] border border-cyan-500/20 rounded-2xl relative overflow-hidden shadow-xl">
+      <div className="p-3.5 xs:p-5 sm:p-6 bg-[#0B0F19] border border-cyan-500/20 rounded-2xl relative overflow-hidden shadow-xl">
         <div className="absolute top-0 right-0 w-96 h-96 bg-cyan-600/10 rounded-full blur-3xl pointer-events-none"></div>
 
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 relative z-10">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 sm:gap-4 relative z-10">
           <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 font-bold">
+            <div className="flex items-center gap-1.5 sm:gap-2 mb-1 flex-wrap">
+              <span className="px-2 py-0.5 rounded-full text-[9px] xs:text-[10px] font-mono bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 font-bold">
                 SENIOR MANAGEMENT COMMAND
               </span>
-              <span className="text-xs text-cyan-400 font-mono">
+              <span className="text-[11px] sm:text-xs text-cyan-400 font-mono">
                 Tenant: {company.name}
               </span>
             </div>
-            <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+            <h1 className="text-lg xs:text-xl sm:text-2xl font-black text-white tracking-tight">
               Company Employee Activity & Threat Search Monitor
             </h1>
-            <p className="text-xs text-slate-400 mt-1 max-w-2xl">
+            <p className="text-[11px] xs:text-xs text-slate-400 mt-1 max-w-2xl leading-relaxed">
               Real-time audit log of team members' internal searches, queries, threat research, and workstation activity within {company.name}.
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
             <button
               onClick={handleExportAudit}
-              className="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-200 text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer shadow-sm hover:border-cyan-500/50"
+              className="w-full sm:w-auto px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-200 text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm hover:border-cyan-500/50"
             >
-              <Download className="w-3.5 h-3.5 text-cyan-400" />
+              <Download className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
               <span>Export Audit Trail (CSV)</span>
             </button>
           </div>
@@ -120,20 +120,20 @@ export default function SeniorManagerDashboard() {
       </div>
 
       {/* Top Threat / Anomaly Detection Banner */}
-      <div className="p-4 bg-rose-950/30 border border-rose-800/40 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div className="flex items-start gap-3">
-          <div className="w-8 h-8 rounded-xl bg-rose-500/20 border border-rose-500/40 flex items-center justify-center shrink-0 mt-0.5">
-            <ShieldAlert className="w-4 h-4 text-rose-400" />
+      <div className="p-3.5 xs:p-4 bg-rose-950/30 border border-rose-800/40 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex items-start gap-2.5 sm:gap-3">
+          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-rose-500/20 border border-rose-500/40 flex items-center justify-center shrink-0 mt-0.5">
+            <ShieldAlert className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-rose-400" />
           </div>
           <div>
-            <h4 className="text-xs font-bold text-rose-200 flex items-center gap-2">
+            <h4 className="text-xs font-bold text-rose-200 flex items-center gap-1.5 sm:gap-2 flex-wrap">
               <span>High-Risk Search Patterns Detected (2 Alerts)</span>
-              <span className="px-1.5 py-0.2 rounded bg-rose-500/30 text-rose-300 text-[10px] font-mono font-bold">
+              <span className="px-1.5 py-0.2 rounded bg-rose-500/30 text-rose-300 text-[9px] xs:text-[10px] font-mono font-bold">
                 POLICY FLAG
               </span>
             </h4>
-            <p className="text-xs text-slate-400 mt-0.5">
-              Workstation queries containing keywords <code className="text-rose-300 bg-rose-950/60 px-1 py-0.5 rounded font-mono">"salary payroll bucket"</code> and <code className="text-rose-300 bg-rose-950/60 px-1 py-0.5 rounded font-mono">"decrypted passkey"</code> were flagged for review.
+            <p className="text-[11px] xs:text-xs text-slate-400 mt-0.5 leading-relaxed">
+              Workstation queries containing keywords <code className="text-rose-300 bg-rose-950/60 px-1 py-0.5 rounded font-mono break-all">"salary payroll bucket"</code> and <code className="text-rose-300 bg-rose-950/60 px-1 py-0.5 rounded font-mono break-all">"decrypted passkey"</code> were flagged for review.
             </p>
           </div>
         </div>
@@ -143,14 +143,14 @@ export default function SeniorManagerDashboard() {
             setRiskFilter('critical');
             setSearchQueryTerm('');
           }}
-          className="px-3 py-1.5 rounded-lg bg-rose-600/30 hover:bg-rose-600/50 border border-rose-500/50 text-rose-200 text-xs font-mono font-semibold transition-all cursor-pointer whitespace-nowrap"
+          className="w-full sm:w-auto px-3 py-1.5 rounded-lg bg-rose-600/30 hover:bg-rose-600/50 border border-rose-500/50 text-rose-200 text-xs font-mono font-semibold transition-all cursor-pointer whitespace-nowrap text-center justify-center"
         >
           View Critical Searches
         </button>
       </div>
 
       {/* Employee Team Roster Cards */}
-      <div className="bg-[#0B0F19] border border-slate-800 rounded-2xl p-5 space-y-4">
+      <div className="bg-[#0B0F19] border border-slate-800 rounded-2xl p-3.5 xs:p-5 space-y-4">
         <div className="flex items-center justify-between">
           <div>
             <h3 className="text-sm font-bold text-white flex items-center gap-2">
@@ -164,7 +164,7 @@ export default function SeniorManagerDashboard() {
           </span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-2 sm:gap-3">
           {companyEmployees.map((emp) => {
             const isOnline = emp.status === 'online';
             const isIdle = emp.status === 'idle';
@@ -173,7 +173,7 @@ export default function SeniorManagerDashboard() {
               <div 
                 key={emp.id} 
                 onClick={() => setSelectedEmployeeFilter(selectedEmployeeFilter === emp.id ? 'ALL' : emp.id)}
-                className={`p-3.5 rounded-xl border transition-all cursor-pointer ${
+                className={`p-2.5 sm:p-3.5 rounded-xl border transition-all cursor-pointer ${
                   selectedEmployeeFilter === emp.id
                     ? 'bg-cyan-950/40 border-cyan-500/60 ring-1 ring-cyan-500/40'
                     : 'bg-slate-900/60 border-slate-800 hover:border-slate-700'
@@ -222,11 +222,11 @@ export default function SeniorManagerDashboard() {
           </div>
 
           {/* Filters */}
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="grid grid-cols-2 gap-1.5 xs:gap-2 w-full md:w-auto">
             <select
               value={selectedEmployeeFilter}
               onChange={(e) => setSelectedEmployeeFilter(e.target.value)}
-              className="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-cyan-500 font-mono cursor-pointer"
+              className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-cyan-500 font-mono cursor-pointer truncate"
             >
               <option value="ALL">All Employees</option>
               {companyEmployees.map(emp => (
@@ -237,7 +237,7 @@ export default function SeniorManagerDashboard() {
             <select
               value={riskFilter}
               onChange={(e) => setRiskFilter(e.target.value)}
-              className="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-cyan-500 font-mono cursor-pointer"
+              className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-cyan-500 font-mono cursor-pointer truncate"
             >
               <option value="ALL">All Risk Levels</option>
               <option value="critical">Critical Risk</option>

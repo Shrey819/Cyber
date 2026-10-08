@@ -9,12 +9,14 @@ import {
   Cpu, 
   Code2, 
   KeyRound, 
+  ArrowLeftRight,
   ExternalLink,
   Bell,
   CheckCircle2,
   Sparkles
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import ThemeToggle from '../ThemeToggle';
 
 export default function DashboardHeader({ onExitToSite, onSwitchUser }) {
   const { currentUser, logout } = useAuth();
@@ -60,39 +62,39 @@ export default function DashboardHeader({ onExitToSite, onSwitchUser }) {
   return (
     <header className="w-full bg-[#080B11]/95 border-b border-slate-800/80 sticky top-0 z-40 backdrop-blur-xl">
       {/* Top micro telemetry bar */}
-      <div className="w-full bg-[#05070B] border-b border-slate-900 px-4 sm:px-8 py-1 flex items-center justify-between text-[10px] font-mono text-slate-500">
-        <div className="flex items-center gap-2">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-          <span className="text-emerald-400 font-semibold">SESSION AUTHENTICATED</span>
+      <div className="w-full bg-[#05070B] border-b border-slate-900 px-2.5 xs:px-4 sm:px-8 py-1 flex items-center justify-between text-[9px] xs:text-[10px] font-mono text-slate-500 overflow-hidden">
+        <div className="flex items-center gap-1.5 sm:gap-2 truncate">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
+          <span className="text-emerald-400 font-semibold truncate">AUTHENTICATED</span>
           <span className="hidden sm:inline">|</span>
           <span className="hidden sm:inline text-slate-400">Clearance: {currentUser.securityClearance}</span>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           <span className="hidden md:inline text-slate-400">Node IP: {currentUser.ipAddress}</span>
-          <span className="text-cyan-400 font-semibold">FIPS 140-3 COMPLIANT</span>
+          <span className="text-cyan-400 font-semibold text-[9px] xs:text-[10px]">FIPS 140-3 COMPLIANT</span>
         </div>
       </div>
 
       {/* Main Bar */}
-      <div className="w-full max-w-[1720px] mx-auto px-4 sm:px-6 md:px-10 py-3 flex items-center justify-between gap-4">
+      <div className="w-full max-w-[1720px] mx-auto px-2.5 xs:px-4 sm:px-6 md:px-10 py-2 sm:py-3 flex items-center justify-between gap-1.5 sm:gap-4 overflow-hidden">
         
         {/* Left: Brand Identity */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           <button 
             onClick={onExitToSite}
-            className="flex items-center gap-2 group cursor-pointer focus:outline-none"
+            className="flex items-center gap-1.5 sm:gap-2 group cursor-pointer focus:outline-none shrink-0"
             title="Return to Public Site"
           >
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-cyan-600 via-blue-600 to-indigo-600 p-[1.5px] shadow-md shadow-cyan-500/20">
+            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-gradient-to-tr from-cyan-600 via-blue-600 to-indigo-600 p-[1.5px] shadow-md shadow-cyan-500/20 shrink-0">
               <div className="w-full h-full bg-[#090D16] rounded-[10px] flex items-center justify-center">
-                <Shield className="w-4 h-4 text-cyan-400 group-hover:scale-110 transition-transform" />
+                <Shield className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-cyan-400 group-hover:scale-110 transition-transform" />
               </div>
             </div>
             <div className="text-left">
               <div className="flex items-center gap-1">
-                <span className="text-base font-black text-white group-hover:text-cyan-300 transition-colors">VORTEX</span>
-                <span className="text-base font-light text-cyan-400">PORTAL</span>
+                <span className="text-sm sm:text-base font-black text-white group-hover:text-cyan-300 transition-colors">VORTEX</span>
+                <span className="text-sm sm:text-base font-light text-cyan-400 hidden xs:inline">PORTAL</span>
               </div>
             </div>
           </button>
@@ -100,51 +102,54 @@ export default function DashboardHeader({ onExitToSite, onSwitchUser }) {
           <span className="hidden sm:inline text-slate-700">|</span>
 
           {/* Company context indicator */}
-          <div className="hidden sm:flex items-center gap-1.5 text-xs text-slate-400 font-mono">
+          <div className="hidden md:flex items-center gap-1.5 text-xs text-slate-400 font-mono">
             <Building2 className="w-3.5 h-3.5 text-slate-500" />
-            <span className="text-slate-200 font-semibold truncate max-w-[200px]">{currentUser.companyName}</span>
+            <span className="text-slate-200 font-semibold truncate max-w-[180px]">{currentUser.companyName}</span>
           </div>
         </div>
 
         {/* Right: Role Persona Switcher & User Controls */}
-        <div className="flex items-center gap-2 sm:gap-3">
+        <div className="flex items-center gap-1 xs:gap-1.5 sm:gap-3 shrink-0">
           
-          {/* Current Role Identity & Switch Account Action */}
-          <div className="flex items-center gap-2">
+          {/* Current Role Identity & Switch Action */}
+          <div className="flex items-center gap-1 sm:gap-2 shrink-0">
             {/* Authenticated Role Indicator */}
-            <div className="px-2.5 sm:px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-xs font-semibold text-slate-200 flex items-center gap-2 shadow-sm">
-              <span className={`w-2 h-2 rounded-full ${roleDot} animate-pulse`} />
-              <span className="hidden xs:inline text-slate-400 font-mono text-[11px]">Role {roleNumber}:</span>
-              <span className={`px-2 py-0.5 rounded text-[10px] font-mono border font-bold ${currentRoleClass}`}>
+            <div className="px-1.5 xs:px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg sm:rounded-xl bg-slate-900 border border-slate-800 text-xs font-semibold text-slate-200 flex items-center gap-1 sm:gap-2 shadow-sm shrink-0">
+              <span className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full ${roleDot} animate-pulse shrink-0`} />
+              <span className="hidden lg:inline text-slate-400 font-mono text-[11px]">Role {roleNumber}:</span>
+              <span className={`px-1.5 sm:px-2 py-0.5 rounded text-[9.5px] xs:text-[10px] font-mono border font-bold truncate max-w-[105px] xs:max-w-none ${currentRoleClass}`}>
                 {currentUser.roleLabel}
               </span>
             </div>
 
-            {/* Switch User / Login Page CTA */}
+            {/* Switch User / Role CTA */}
             <button
               onClick={handleSwitchUser}
-              className="px-2.5 sm:px-3 py-1.5 rounded-xl bg-gradient-to-r from-cyan-950/80 to-blue-950/80 hover:from-cyan-900 hover:to-blue-900 border border-cyan-500/40 hover:border-cyan-400 text-cyan-300 text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer shadow-sm shadow-cyan-950/50"
-              title="Sign in as different role on Common Login Page"
+              className="p-1.5 sm:px-3 sm:py-1.5 rounded-lg sm:rounded-xl bg-cyan-950/40 hover:bg-cyan-900/60 border border-cyan-800/50 hover:border-cyan-500/60 text-cyan-300 hover:text-cyan-200 text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-sm shrink-0"
+              title="Switch User / Role (Login Page)"
+              aria-label="Switch Role"
             >
-              <KeyRound className="w-3.5 h-3.5 text-cyan-400" />
-              <span className="hidden sm:inline">Switch User (Login)</span>
-              <span className="sm:hidden">Switch</span>
+              <ArrowLeftRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-cyan-400 shrink-0" />
+              <span className="hidden sm:inline">Switch Role</span>
             </button>
           </div>
 
+          {/* Theme Mode Switcher */}
+          <ThemeToggle className="shrink-0 p-1.5 sm:p-2 rounded-lg sm:rounded-xl" />
+
           {/* Notification Center */}
-          <div className="relative">
+          <div className="relative shrink-0 hidden xs:block">
             <button
               onClick={() => setNotifOpen(!notifOpen)}
-              className="p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white relative cursor-pointer"
+              className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white relative cursor-pointer"
               title="System Alerts"
             >
-              <Bell className="w-4 h-4" />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-cyan-400"></span>
+              <Bell className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
             </button>
 
             {notifOpen && (
-              <div className="absolute right-0 mt-2 w-72 sm:w-80 bg-[#0D121F] border border-slate-800 rounded-2xl shadow-2xl p-3 z-50 animate-fadeIn text-xs">
+              <div className="absolute right-0 mt-2 w-64 sm:w-80 bg-[#0D121F] border border-slate-800 rounded-2xl shadow-2xl p-3 z-50 animate-fadeIn text-xs">
                 <div className="flex justify-between items-center pb-2 border-b border-slate-800 text-slate-400 font-mono text-[11px]">
                   <span>NOTIFICATIONS</span>
                   <span className="text-cyan-400 font-bold">3 NEW</span>
@@ -166,7 +171,7 @@ export default function DashboardHeader({ onExitToSite, onSwitchUser }) {
           {/* Exit to Public Website */}
           <button
             onClick={onExitToSite}
-            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white text-xs font-medium transition-colors cursor-pointer"
+            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white text-xs font-medium transition-colors cursor-pointer shrink-0"
             title="Return to Public Website"
           >
             <Globe className="w-3.5 h-3.5" />
@@ -176,10 +181,10 @@ export default function DashboardHeader({ onExitToSite, onSwitchUser }) {
           {/* Logout */}
           <button
             onClick={handleSwitchUser}
-            className="p-2 rounded-xl bg-rose-950/40 hover:bg-rose-900/60 border border-rose-800/50 text-rose-300 hover:text-rose-200 transition-colors cursor-pointer"
+            className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-rose-950/40 hover:bg-rose-900/60 border border-rose-800/50 text-rose-300 hover:text-rose-200 transition-colors cursor-pointer shrink-0"
             title="Sign Out to Login Page"
           >
-            <LogOut className="w-4 h-4" />
+            <LogOut className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           </button>
         </div>
       </div>

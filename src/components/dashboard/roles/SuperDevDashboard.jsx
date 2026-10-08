@@ -77,67 +77,67 @@ export default function SuperDevDashboard() {
       )}
 
       {/* Hero Telemetry & Status Bar */}
-      <div className="p-5 sm:p-6 bg-[#0B0F19] border border-cyan-500/20 rounded-2xl relative overflow-hidden shadow-xl">
+      <div className="p-3.5 xs:p-5 sm:p-6 bg-[#0B0F19] border border-cyan-500/20 rounded-2xl relative overflow-hidden shadow-xl">
         <div className="absolute top-0 right-0 w-96 h-96 bg-purple-600/10 rounded-full blur-3xl pointer-events-none"></div>
         
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 relative z-10">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 sm:gap-4 relative z-10">
           <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-purple-500/20 text-purple-300 border border-purple-500/40 font-bold">
+            <div className="flex items-center gap-1.5 sm:gap-2 mb-1 flex-wrap">
+              <span className="px-2 py-0.5 rounded-full text-[9px] xs:text-[10px] font-mono bg-purple-500/20 text-purple-300 border border-purple-500/40 font-bold">
                 ROOT DEVELOPER CONSOLE
               </span>
-              <span className="flex items-center gap-1.5 text-xs text-emerald-400 font-mono">
+              <span className="flex items-center gap-1.5 text-[11px] sm:text-xs text-emerald-400 font-mono">
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
                 LIVE CLUSTER TELEMETRY
               </span>
             </div>
-            <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+            <h1 className="text-lg xs:text-xl sm:text-2xl font-black text-white tracking-tight">
               Global Platform Infrastructure & Load Monitor
             </h1>
-            <p className="text-xs text-slate-400 mt-1 max-w-2xl">
+            <p className="text-[11px] xs:text-xs text-slate-400 mt-1 max-w-2xl leading-relaxed">
               Real-time hardware load, microservice health, memory pressure, active distributed sessions, and live kernel logs across all global edge nodes.
             </p>
           </div>
 
           {/* Quick System Action Buttons */}
-          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+          <div className="grid grid-cols-2 gap-1.5 xs:gap-2 w-full lg:w-auto">
             <button
               onClick={handleFlushCache}
-              className="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-200 text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer shadow-sm hover:border-cyan-500/50"
+              className="px-2.5 xs:px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-200 text-[11px] xs:text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-sm hover:border-cyan-500/50"
             >
-              <RefreshCw className="w-3.5 h-3.5 text-cyan-400" />
-              <span>Flush Global Cache</span>
+              <RefreshCw className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+              <span className="truncate">Flush Cache</span>
             </button>
 
             <button
               onClick={handleToggleMaintenance}
-              className={`px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer border ${
+              className={`px-2.5 xs:px-3.5 py-2 rounded-xl text-[11px] xs:text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer border ${
                 systemMetrics.maintenanceMode
                   ? 'bg-amber-500/20 border-amber-500/50 text-amber-300 hover:bg-amber-500/30'
                   : 'bg-rose-950/40 border-rose-800/60 text-rose-300 hover:bg-rose-900/60'
               }`}
             >
-              <Power className="w-3.5 h-3.5" />
-              <span>{systemMetrics.maintenanceMode ? 'Exit Maintenance' : 'Maintenance Mode'}</span>
+              <Power className="w-3.5 h-3.5 shrink-0" />
+              <span className="truncate">{systemMetrics.maintenanceMode ? 'Exit Maint.' : 'Maintenance'}</span>
             </button>
           </div>
         </div>
       </div>
 
-      {/* Core Telemetry Grid: CPU, RAM, Network, Users */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Core Telemetry Grid: CPU, RAM, Network, Users (2x2 on mobile, 4-col on desktop) */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 xs:gap-2.5 sm:gap-4">
         {/* Metric 1: CPU Load */}
-        <div className="p-4 sm:p-5 bg-[#0B0F19] border border-slate-800 rounded-xl relative overflow-hidden">
-          <div className="flex items-center justify-between text-slate-400 mb-3">
-            <span className="text-xs font-mono uppercase tracking-wider">CPU Compute Load</span>
-            <Cpu className="w-4 h-4 text-cyan-400" />
+        <div className="p-2.5 xs:p-3 sm:p-5 bg-[#0B0F19] border border-slate-800 rounded-xl relative overflow-hidden">
+          <div className="flex items-center justify-between text-slate-400 mb-2 sm:mb-3">
+            <span className="text-[10px] sm:text-xs font-mono uppercase tracking-wider truncate">CPU Load</span>
+            <Cpu className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-cyan-400 shrink-0" />
           </div>
           <div className="flex items-baseline justify-between mb-2">
-            <span className="text-2xl sm:text-3xl font-black font-mono text-white">
+            <span className="text-xl xs:text-2xl sm:text-3xl font-black font-mono text-white">
               {systemMetrics.cpuLoad}%
             </span>
-            <span className="text-[11px] font-mono text-emerald-400 flex items-center gap-1">
-              <Activity className="w-3 h-3" />
+            <span className="text-[10px] sm:text-[11px] font-mono text-emerald-400 flex items-center gap-1">
+              <Activity className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
               32 vCPUs
             </span>
           </div>
@@ -150,24 +150,24 @@ export default function SuperDevDashboard() {
               style={{ width: `${systemMetrics.cpuLoad}%` }}
             ></div>
           </div>
-          <div className="flex justify-between items-center text-[10px] text-slate-500 font-mono mt-2">
-            <span>Load Avg: 1.14, 0.98, 0.85</span>
-            <span>Freq: 3.8 GHz</span>
+          <div className="hidden xs:flex justify-between items-center text-[9px] sm:text-[10px] text-slate-500 font-mono mt-2">
+            <span>Avg: 1.14</span>
+            <span>3.8 GHz</span>
           </div>
         </div>
 
         {/* Metric 2: Memory Load */}
-        <div className="p-4 sm:p-5 bg-[#0B0F19] border border-slate-800 rounded-xl relative overflow-hidden">
-          <div className="flex items-center justify-between text-slate-400 mb-3">
-            <span className="text-xs font-mono uppercase tracking-wider">Memory Allocation</span>
-            <HardDrive className="w-4 h-4 text-purple-400" />
+        <div className="p-3 sm:p-5 bg-[#0B0F19] border border-slate-800 rounded-xl relative overflow-hidden">
+          <div className="flex items-center justify-between text-slate-400 mb-2 sm:mb-3">
+            <span className="text-[10px] sm:text-xs font-mono uppercase tracking-wider truncate">Memory</span>
+            <HardDrive className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-purple-400 shrink-0" />
           </div>
           <div className="flex items-baseline justify-between mb-2">
-            <span className="text-2xl sm:text-3xl font-black font-mono text-white">
+            <span className="text-xl xs:text-2xl sm:text-3xl font-black font-mono text-white">
               {systemMetrics.memoryUsed}%
             </span>
-            <span className="text-[11px] font-mono text-slate-400">
-              87.2 / {systemMetrics.memoryTotalGb} GB
+            <span className="text-[10px] sm:text-[11px] font-mono text-slate-400 truncate">
+              {systemMetrics.memoryTotalGb} GB
             </span>
           </div>
           {/* Progress Bar */}
@@ -177,55 +177,55 @@ export default function SuperDevDashboard() {
               style={{ width: `${systemMetrics.memoryUsed}%` }}
             ></div>
           </div>
-          <div className="flex justify-between items-center text-[10px] text-slate-500 font-mono mt-2">
-            <span>Swap: 2.1 GB / 32 GB</span>
-            <span>Cache: 41.5 GB</span>
+          <div className="hidden xs:flex justify-between items-center text-[9px] sm:text-[10px] text-slate-500 font-mono mt-2">
+            <span>Swap: 2.1G</span>
+            <span>41.5G Cache</span>
           </div>
         </div>
 
         {/* Metric 3: Network Throughput & Requests */}
-        <div className="p-4 sm:p-5 bg-[#0B0F19] border border-slate-800 rounded-xl relative overflow-hidden">
-          <div className="flex items-center justify-between text-slate-400 mb-3">
-            <span className="text-xs font-mono uppercase tracking-wider">Traffic & Throughput</span>
-            <Zap className="w-4 h-4 text-amber-400" />
+        <div className="p-3 sm:p-5 bg-[#0B0F19] border border-slate-800 rounded-xl relative overflow-hidden">
+          <div className="flex items-center justify-between text-slate-400 mb-2 sm:mb-3">
+            <span className="text-[10px] sm:text-xs font-mono uppercase tracking-wider truncate">Traffic</span>
+            <Zap className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400 shrink-0" />
           </div>
           <div className="flex items-baseline justify-between mb-2">
-            <span className="text-2xl sm:text-3xl font-black font-mono text-white">
+            <span className="text-xl xs:text-2xl sm:text-3xl font-black font-mono text-white">
               {systemMetrics.requestsPerSec.toLocaleString()}
             </span>
-            <span className="text-[11px] font-mono text-cyan-400">
-              req / sec
+            <span className="text-[10px] sm:text-[11px] font-mono text-cyan-400">
+              req/s
             </span>
           </div>
           <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
             <div className="h-full bg-amber-400 w-3/4 animate-pulse"></div>
           </div>
-          <div className="flex justify-between items-center text-[10px] text-slate-500 font-mono mt-2">
-            <span>In: {systemMetrics.networkInMbps} Mb/s</span>
-            <span>Out: {systemMetrics.networkOutMbps} Mb/s</span>
+          <div className="hidden xs:flex justify-between items-center text-[9px] sm:text-[10px] text-slate-500 font-mono mt-2">
+            <span>In: {systemMetrics.networkInMbps}M</span>
+            <span>Out: {systemMetrics.networkOutMbps}M</span>
           </div>
         </div>
 
         {/* Metric 4: Active Users & WebSockets */}
-        <div className="p-4 sm:p-5 bg-[#0B0F19] border border-slate-800 rounded-xl relative overflow-hidden">
-          <div className="flex items-center justify-between text-slate-400 mb-3">
-            <span className="text-xs font-mono uppercase tracking-wider">Active Platform Users</span>
-            <Users className="w-4 h-4 text-emerald-400" />
+        <div className="p-3 sm:p-5 bg-[#0B0F19] border border-slate-800 rounded-xl relative overflow-hidden">
+          <div className="flex items-center justify-between text-slate-400 mb-2 sm:mb-3">
+            <span className="text-[10px] sm:text-xs font-mono uppercase tracking-wider truncate">Active Users</span>
+            <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-400 shrink-0" />
           </div>
           <div className="flex items-baseline justify-between mb-2">
-            <span className="text-2xl sm:text-3xl font-black font-mono text-white">
+            <span className="text-xl xs:text-2xl sm:text-3xl font-black font-mono text-white">
               {onlineUsers.length}
             </span>
-            <span className="text-[11px] font-mono text-emerald-400">
-              {systemMetrics.activeWsConnections.toLocaleString()} WS sockets
+            <span className="text-[10px] sm:text-[11px] font-mono text-emerald-400">
+              {systemMetrics.activeWsConnections.toLocaleString()} WS
             </span>
           </div>
           <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
             <div className="h-full bg-emerald-400 w-4/5"></div>
           </div>
-          <div className="flex justify-between items-center text-[10px] text-slate-500 font-mono mt-2">
-            <span>Across {companies.length} Companies</span>
-            <span>Latency: {systemMetrics.avgLatencyMs}ms</span>
+          <div className="hidden xs:flex justify-between items-center text-[9px] sm:text-[10px] text-slate-500 font-mono mt-2">
+            <span>Clusters: 32/32</span>
+            <span>Zero-Fail</span>
           </div>
         </div>
       </div>

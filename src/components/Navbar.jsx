@@ -16,6 +16,7 @@ import {
   Sparkles
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import ThemeToggle from './ThemeToggle';
 
 export default function Navbar({ currentPage, setCurrentPage, openLoginModal, openEmergencyModal }) {
   const { currentUser } = useAuth();
@@ -155,7 +156,10 @@ export default function Navbar({ currentPage, setCurrentPage, openLoginModal, op
           </div>
 
           {/* Right Action CTA Buttons */}
-          <div className="hidden sm:flex items-center gap-2.5 md:gap-3">
+          <div className="hidden sm:flex items-center gap-2 md:gap-2.5">
+            {/* Theme Mode Switcher */}
+            <ThemeToggle />
+
             <button
               onClick={openEmergencyModal}
               className="px-3 md:px-3.5 py-2 rounded-xl text-xs font-semibold text-rose-300 bg-rose-950/40 hover:bg-rose-900/60 border border-rose-700/50 hover:border-rose-500 transition-all duration-200 flex items-center gap-1.5 md:gap-2 cursor-pointer shadow-sm"
@@ -189,7 +193,9 @@ export default function Navbar({ currentPage, setCurrentPage, openLoginModal, op
           </div>
 
           {/* Mobile Menu & Quick Login Buttons */}
-          <div className="flex sm:hidden items-center gap-2">
+          <div className="flex sm:hidden items-center gap-1.5">
+            <ThemeToggle />
+
             <button
               onClick={currentUser ? () => handleNavClick('dashboard') : () => handleNavClick('login')}
               className="px-2.5 py-1.5 rounded-lg bg-cyan-500/15 border border-cyan-500/30 text-cyan-300 text-xs font-semibold flex items-center gap-1"
@@ -236,16 +242,16 @@ export default function Navbar({ currentPage, setCurrentPage, openLoginModal, op
               })}
             </div>
 
-            <div className="pt-3 border-t border-slate-800/80 flex flex-col gap-2">
+            <div className="pt-3 border-t border-slate-800/80 grid grid-cols-2 gap-2">
               <button
                 onClick={() => {
                   setMobileMenuOpen(false);
                   openEmergencyModal();
                 }}
-                className="w-full py-3 px-4 rounded-xl bg-rose-950/70 border border-rose-700/60 text-rose-300 text-xs sm:text-sm font-semibold flex items-center justify-center gap-2"
+                className="py-2.5 px-2.5 rounded-xl bg-rose-950/70 border border-rose-700/60 text-rose-300 text-xs font-semibold flex items-center justify-center gap-1.5 cursor-pointer"
               >
-                <PhoneCall className="w-4 h-4 text-rose-400 animate-pulse" />
-                <span>24/7 Emergency Incident Hotline</span>
+                <PhoneCall className="w-3.5 h-3.5 text-rose-400 shrink-0" />
+                <span className="truncate">Emergency Hotline</span>
               </button>
 
               <button
@@ -254,13 +260,13 @@ export default function Navbar({ currentPage, setCurrentPage, openLoginModal, op
                   if (currentUser) {
                     handleNavClick('dashboard');
                   } else {
-                    openLoginModal();
+                    handleNavClick('login');
                   }
                 }}
-                className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 text-white text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 shadow-lg shadow-cyan-600/25"
+                className="py-2.5 px-2.5 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 text-white text-xs font-semibold flex items-center justify-center gap-1.5 shadow-md shadow-cyan-600/25 cursor-pointer"
               >
-                <KeyRound className="w-4 h-4" />
-                <span>{currentUser ? 'Open Enterprise Dashboard' : 'Enter Enterprise Client Portal'}</span>
+                <KeyRound className="w-3.5 h-3.5 shrink-0" />
+                <span className="truncate">{currentUser ? 'Dashboard' : 'Portal Login'}</span>
               </button>
             </div>
           </div>

@@ -123,7 +123,7 @@ export default function HomePage({ setCurrentPage, openLoginModal, openEmergency
                 <span>ACTIVE AUTONOMOUS PERIMETER SURVEILLANCE</span>
               </div>
 
-              <h1 className="text-3xl xs:text-4xl sm:text-5xl md:text-6xl lg:text-6xl xl:text-7xl font-black text-white tracking-tight leading-[1.15] sm:leading-[1.1]">
+              <h1 className="text-2xl xs:text-3xl sm:text-5xl md:text-6xl lg:text-6xl xl:text-7xl font-black text-white tracking-tight leading-[1.15] sm:leading-[1.1]">
                 Defend What Matters.
                 <br />
                 <span className="bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-blue-400 to-indigo-400">
@@ -136,17 +136,17 @@ export default function HomePage({ setCurrentPage, openLoginModal, openEmergency
                 Autonomous threat intelligence, 24/7 Managed SOC, and elite offensive red-teaming designed to neutralize nation-state adversaries and zero-day exploits in under 12 minutes.
               </p>
 
-              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3 sm:gap-4 pt-2">
+              <div className="grid grid-cols-2 sm:flex sm:items-center justify-center lg:justify-start gap-2.5 sm:gap-4 pt-2 w-full sm:w-auto">
                 <button
                   onClick={() => {
                     setCurrentPage('services');
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                   }}
-                  className="w-full sm:w-auto px-5 sm:px-7 py-3 sm:py-3.5 rounded-xl font-bold text-xs sm:text-sm text-slate-950 bg-gradient-to-r from-cyan-400 to-cyan-300 hover:from-cyan-300 hover:to-cyan-200 transition-all shadow-[0_0_30px_rgba(0,240,255,0.3)] hover:shadow-[0_0_40px_rgba(0,240,255,0.5)] flex items-center justify-center gap-2 cursor-pointer"
+                  className="px-3 sm:px-7 py-2.5 sm:py-3.5 rounded-xl font-bold text-xs sm:text-sm text-slate-950 bg-gradient-to-r from-cyan-400 to-cyan-300 hover:from-cyan-300 hover:to-cyan-200 transition-all shadow-[0_0_20px_rgba(0,240,255,0.25)] hover:shadow-[0_0_40px_rgba(0,240,255,0.5)] flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer"
                 >
-                  <Shield className="w-4 h-4 text-slate-950" />
-                  <span>Explore Security Solutions</span>
-                  <ArrowRight className="w-4 h-4 text-slate-950" />
+                  <Shield className="w-3.5 h-3.5 text-slate-950 shrink-0" />
+                  <span className="truncate">Explore Solutions</span>
+                  <ArrowRight className="w-3.5 h-3.5 text-slate-950 shrink-0 hidden xs:inline" />
                 </button>
 
                 <button
@@ -154,10 +154,10 @@ export default function HomePage({ setCurrentPage, openLoginModal, openEmergency
                     setCurrentPage('contact');
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                   }}
-                  className="w-full sm:w-auto px-5 sm:px-6 py-3 sm:py-3.5 rounded-xl font-semibold text-xs sm:text-sm text-slate-200 bg-slate-900/80 hover:bg-slate-800 border border-slate-700 hover:border-cyan-500/50 transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md"
+                  className="px-3 sm:px-6 py-2.5 sm:py-3.5 rounded-xl font-semibold text-xs sm:text-sm text-slate-200 bg-slate-900/80 hover:bg-slate-800 border border-slate-700 hover:border-cyan-500/50 transition-all flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer shadow-md"
                 >
-                  <Search className="w-4 h-4 text-cyan-400" />
-                  <span>Request Security Audit</span>
+                  <Search className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                  <span className="truncate">Security Audit</span>
                 </button>
               </div>
 

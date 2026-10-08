@@ -79,68 +79,68 @@ export default function AdminManagerDashboard() {
       )}
 
       {/* Hero Header */}
-      <div className="p-5 sm:p-6 bg-[#0B0F19] border border-amber-500/20 rounded-2xl relative overflow-hidden shadow-xl">
+      <div className="p-3.5 xs:p-5 sm:p-6 bg-[#0B0F19] border border-amber-500/20 rounded-2xl relative overflow-hidden shadow-xl">
         <div className="absolute top-0 right-0 w-96 h-96 bg-amber-600/10 rounded-full blur-3xl pointer-events-none"></div>
 
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 relative z-10">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 sm:gap-4 relative z-10">
           <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-amber-500/20 text-amber-300 border border-amber-500/40 font-bold">
+            <div className="flex items-center gap-1.5 sm:gap-2 mb-1 flex-wrap">
+              <span className="px-2 py-0.5 rounded-full text-[9px] xs:text-[10px] font-mono bg-amber-500/20 text-amber-300 border border-amber-500/40 font-bold">
                 PLATFORM OPERATIONS OVERSIGHT
               </span>
-              <span className="text-xs text-amber-400 font-mono">
+              <span className="text-[11px] sm:text-xs text-amber-400 font-mono">
                 {companies.length} Registered Enterprise Tenants
               </span>
             </div>
-            <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+            <h1 className="text-lg xs:text-xl sm:text-2xl font-black text-white tracking-tight">
               Multi-Tenant Company Logins & Identity Management
             </h1>
-            <p className="text-xs text-slate-400 mt-1 max-w-2xl">
+            <p className="text-[11px] xs:text-xs text-slate-400 mt-1 max-w-2xl leading-relaxed">
               Inspect total logins, audit individual vs company-affiliated users, view real-time online members per company, and manage session clearance.
             </p>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="grid grid-cols-2 gap-1.5 xs:gap-2 w-full lg:w-auto">
             <button
               onClick={() => setActiveTab('companies')}
-              className={`px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer border ${
+              className={`px-2.5 xs:px-3.5 py-2 rounded-xl text-[11px] xs:text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer border ${
                 activeTab === 'companies'
                   ? 'bg-amber-500/20 border-amber-500/60 text-amber-300 shadow-[0_0_15px_rgba(245,158,11,0.2)]'
                   : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white'
               }`}
             >
-              <Building2 className="w-3.5 h-3.5" />
-              <span>Company Affiliated</span>
+              <Building2 className="w-3.5 h-3.5 shrink-0" />
+              <span className="truncate">Company Affiliated</span>
             </button>
 
             <button
               onClick={() => setActiveTab('individual')}
-              className={`px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer border ${
+              className={`px-2.5 xs:px-3.5 py-2 rounded-xl text-[11px] xs:text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer border ${
                 activeTab === 'individual'
                   ? 'bg-amber-500/20 border-amber-500/60 text-amber-300 shadow-[0_0_15px_rgba(245,158,11,0.2)]'
                   : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white'
               }`}
             >
-              <Users className="w-3.5 h-3.5" />
-              <span>Individual Users ({individualUsers.length})</span>
+              <Users className="w-3.5 h-3.5 shrink-0" />
+              <span className="truncate">Individual Users ({individualUsers.length})</span>
             </button>
           </div>
         </div>
       </div>
 
-      {/* KPI Overview Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* KPI Overview Cards (2x2 on mobile, 4-col on desktop) */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 xs:gap-2.5 sm:gap-4">
         {/* Total Logins Today */}
-        <div className="p-4 sm:p-5 bg-[#0B0F19] border border-slate-800 rounded-xl relative">
-          <div className="flex items-center justify-between text-slate-400 mb-2">
-            <span className="text-xs font-mono uppercase">Total Daily Logins</span>
-            <Clock className="w-4 h-4 text-amber-400" />
+        <div className="p-2.5 xs:p-3 sm:p-5 bg-[#0B0F19] border border-slate-800 rounded-xl relative">
+          <div className="flex items-center justify-between text-slate-400 mb-1.5 sm:mb-2">
+            <span className="text-[10px] sm:text-xs font-mono uppercase truncate">Daily Logins</span>
+            <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400 shrink-0" />
           </div>
-          <div className="text-2xl sm:text-3xl font-black font-mono text-white mb-1">
+          <div className="text-xl xs:text-2xl sm:text-3xl font-black font-mono text-white mb-1">
             {totalLoginsToday.toLocaleString()}
           </div>
-          <p className="text-[11px] text-emerald-400 flex items-center gap-1 font-mono">
-            <span>+14.8% vs yesterday</span>
+          <p className="text-[10px] sm:text-[11px] text-emerald-400 flex items-center gap-1 font-mono">
+            <span>+14.8%</span>
           </p>
         </div>
 
@@ -263,11 +263,11 @@ export default function AdminManagerDashboard() {
               </div>
 
               {/* Quick Filters */}
-              <div className="flex flex-wrap items-center gap-2">
+              <div className="grid grid-cols-2 gap-1.5 xs:gap-2 w-full sm:w-auto">
                 <select
                   value={roleFilter}
                   onChange={(e) => setRoleFilter(e.target.value)}
-                  className="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500 cursor-pointer font-mono"
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500 cursor-pointer font-mono truncate"
                 >
                   <option value="ALL">All Roles</option>
                   <option value="senior_manager">Senior Manager</option>
@@ -278,7 +278,7 @@ export default function AdminManagerDashboard() {
                 <select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
-                  className="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500 cursor-pointer font-mono"
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500 cursor-pointer font-mono truncate"
                 >
                   <option value="ALL">All Statuses</option>
                   <option value="online">Online Only</option>

@@ -18,6 +18,7 @@ import {
   Info
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import ThemeToggle from '../components/ThemeToggle';
 
 export default function LoginPage({ onLoginSuccess, onExitToSite }) {
   const { login, roleCredentials = [], detectRole } = useAuth();
@@ -118,13 +119,17 @@ export default function LoginPage({ onLoginSuccess, onExitToSite }) {
           </div>
         </button>
 
-        <button
-          onClick={onExitToSite}
-          className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 text-slate-300 hover:text-white text-xs font-medium transition-all cursor-pointer"
-        >
-          <Globe className="w-3.5 h-3.5 text-cyan-400" />
-          <span>Public Website</span>
-        </button>
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+
+          <button
+            onClick={onExitToSite}
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 text-slate-300 hover:text-white text-xs font-medium transition-all cursor-pointer"
+          >
+            <Globe className="w-3.5 h-3.5 text-cyan-400" />
+            <span>Public Website</span>
+          </button>
+        </div>
       </header>
 
       {/* Main Container */}
@@ -239,102 +244,131 @@ export default function LoginPage({ onLoginSuccess, onExitToSite }) {
               </div>
             </div>
 
-            {/* Submit Button */}
-            <button
-              type="submit"
-              disabled={authenticating}
-              className="w-full mt-2 py-3 rounded-xl bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 text-white font-semibold text-xs tracking-wide transition-all shadow-lg shadow-cyan-600/20 hover:shadow-cyan-500/30 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
-            >
-              {authenticating ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  <span>Verifying RBAC Identity...</span>
-                </>
-              ) : (
-                <>
-                  <KeyRound className="w-4 h-4 text-cyan-200" />
-                  <span>Authenticate & Enter Portal</span>
-                  <ArrowRight className="w-4 h-4 text-cyan-200" />
-                </>
-              )}
-            </button>
+            {/* Action Buttons: 2 in a row on mobile instead of full-width giant button */}
+            <div className="grid grid-cols-2 gap-2 pt-1">
+              <button
+                type="submit"
+                disabled={authenticating}
+                className="py-2.5 px-3 rounded-xl bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 text-white font-semibold text-xs tracking-wide transition-all shadow-md shadow-cyan-600/20 hover:shadow-cyan-500/30 flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+              >
+                {authenticating ? (
+                  <>
+                    <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <span className="truncate">Verifying...</span>
+                  </>
+                ) : (
+                  <>
+                    <KeyRound className="w-3.5 h-3.5 text-cyan-200 shrink-0" />
+                    <span className="truncate">Sign In</span>
+                    <ArrowRight className="w-3.5 h-3.5 text-cyan-200 shrink-0 hidden xs:inline" />
+                  </>
+                )}
+              </button>
+
+              <button
+                type="button"
+                onClick={onExitToSite}
+                className="py-2.5 px-3 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 text-slate-300 hover:text-white font-medium text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                <Globe className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                <span className="truncate">Public Site</span>
+              </button>
+            </div>
           </form>
 
           {/* Security Notice */}
-          <div className="mt-5 pt-4 border-t border-slate-800/80 flex items-center justify-between text-[10px] text-slate-500 font-mono">
+          <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-[9.5px] sm:text-[10px] text-slate-500 font-mono">
             <span>FIPS 140-3 ZERO-TRUST</span>
-            <span className="text-cyan-400">SHA-256 ENCRYPTED</span>
+            <span className="text-cyan-400">SHA-256</span>
           </div>
         </div>
 
         {/* Right Side: Role Decision Guide & 1-Click Tester */}
         <div className="w-full max-w-xl space-y-3">
           
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
             <div>
-              <h2 className="text-base font-bold text-white flex items-center gap-2">
+              <h2 className="text-sm sm:text-base font-bold text-white flex items-center gap-2">
                 <span>Role Credentials & Quick-Fill</span>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">
-                  5 ROLES AVAILABLE
+                <span className="text-[9px] sm:text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">
+                  5 ROLES
                 </span>
               </h2>
-              <p className="text-xs text-slate-400 mt-0.5">
-                Click any role card below to auto-fill its User ID & Password and test:
+              <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5">
+                Tap any role chip or card to auto-fill and test:
               </p>
             </div>
           </div>
 
-          <div className="space-y-2">
+          {/* Horizontal Role Selector Chips Bar for rapid 1-tap mobile selection */}
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none select-none">
+            {roleCredentials.map((role) => {
+              const isSelected = detectedRole?.roleNumber === role.roleNumber;
+              return (
+                <button
+                  key={role.roleNumber}
+                  type="button"
+                  onClick={() => handleFillCredentials(role)}
+                  className={`shrink-0 px-2.5 py-1.5 rounded-lg text-[11px] font-mono flex items-center gap-1.5 border transition-all cursor-pointer ${
+                    isSelected
+                      ? 'bg-cyan-500/20 text-cyan-300 border-cyan-400/80 font-bold shadow-sm'
+                      : 'bg-slate-900/80 hover:bg-slate-800 text-slate-400 border-slate-800 hover:text-white'
+                  }`}
+                >
+                  <span className={`w-4 h-4 rounded text-[9px] font-bold text-white flex items-center justify-center bg-gradient-to-tr ${role.accentGrad}`}>
+                    {role.roleNumber}
+                  </span>
+                  <span>{role.roleLabel.replace('Developer', 'Dev').replace('Manager', 'Mgr')}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* 2-Column Responsive Role Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {roleCredentials.map((role) => {
               const isSelected = detectedRole?.roleNumber === role.roleNumber;
               return (
                 <div
                   key={role.roleNumber}
-                  className={`p-3.5 rounded-xl border transition-all ${
+                  className={`p-3 rounded-xl border transition-all flex flex-col justify-between ${
                     isSelected
-                      ? 'bg-slate-900/90 border-cyan-400/80 shadow-[0_0_20px_rgba(0,240,255,0.15)] ring-1 ring-cyan-400/50'
+                      ? 'bg-slate-900/95 border-cyan-400/80 shadow-[0_0_15px_rgba(0,240,255,0.12)] ring-1 ring-cyan-400/50'
                       : 'bg-[#0D121F]/70 border-slate-800/90 hover:border-slate-700 hover:bg-slate-900/50'
                   }`}
                 >
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
-                    
-                    {/* Role Info */}
-                    <div className="flex items-start gap-3">
-                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 text-xs font-bold font-mono bg-gradient-to-tr ${role.accentGrad} text-white shadow`}>
-                        {role.roleNumber}
+                  {/* Top info */}
+                  <div className="flex items-start gap-2.5 mb-2">
+                    <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 text-xs font-bold font-mono bg-gradient-to-tr ${role.accentGrad} text-white shadow`}>
+                      {role.roleNumber}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center justify-between gap-1">
+                        <span className="text-xs font-bold text-white truncate">
+                          {role.roleLabel}
+                        </span>
+                        <span className="text-[9.5px] font-mono text-cyan-400 shrink-0">
+                          #{role.roleNumber}
+                        </span>
                       </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-bold text-white">
-                            Role {role.roleNumber}: {role.roleLabel}
-                          </span>
-                          <span className="text-[10px] text-slate-400 truncate hidden xs:inline">
-                            ({role.personName})
-                          </span>
-                        </div>
-                        <p className="text-[11px] text-slate-400 line-clamp-1 mt-0.5">
-                          {role.description}
-                        </p>
-                        
-                        {/* Credentials specs */}
-                        <div className="flex flex-wrap items-center gap-2 mt-1.5 text-[10px] font-mono">
-                          <span className="px-1.5 py-0.5 rounded bg-slate-950 border border-slate-800 text-slate-300">
-                            User ID: <strong className="text-cyan-300">{role.defaultUserId}</strong> (or <strong className="text-cyan-300">{role.roleNumber}</strong>)
-                          </span>
-                          <span className="px-1.5 py-0.5 rounded bg-slate-950 border border-slate-800 text-slate-300">
-                            Password: <strong className="text-emerald-300">password123</strong>
-                          </span>
-                        </div>
-                      </div>
+                      <p className="text-[10px] text-slate-400 truncate">
+                        {role.personName} • {role.company.split(' ')[0]}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Credentials row + Quick button combined */}
+                  <div className="pt-2 border-t border-slate-800/70 flex items-center justify-between gap-1.5 text-[9.5px] font-mono">
+                    <div className="text-slate-400 truncate">
+                      ID: <strong className="text-cyan-300">{role.defaultUserId}</strong>
                     </div>
 
-                    {/* Auto-fill button */}
                     <button
                       type="button"
                       onClick={() => handleFillCredentials(role)}
-                      className="shrink-0 px-3 py-1.5 rounded-lg bg-cyan-950/60 hover:bg-cyan-900/80 border border-cyan-500/40 hover:border-cyan-400 text-cyan-300 text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-sm"
+                      className="shrink-0 px-2 py-1 rounded bg-cyan-950/70 hover:bg-cyan-900 border border-cyan-500/40 hover:border-cyan-400 text-cyan-300 text-[10px] font-semibold flex items-center gap-1 transition-all cursor-pointer"
                     >
-                      <Sparkles className="w-3 h-3 text-cyan-400" />
+                      <Sparkles className="w-2.5 h-2.5 text-cyan-400" />
                       <span>Use Role {role.roleNumber}</span>
                     </button>
                   </div>
@@ -343,10 +377,10 @@ export default function LoginPage({ onLoginSuccess, onExitToSite }) {
             })}
           </div>
 
-          <div className="p-3 rounded-xl bg-slate-900/50 border border-slate-800 text-slate-400 text-[11px] flex items-center gap-2">
-            <Info className="w-4 h-4 text-cyan-400 shrink-0" />
+          <div className="p-2.5 rounded-xl bg-slate-900/50 border border-slate-800 text-slate-400 text-[10px] sm:text-[11px] flex items-center gap-2">
+            <Info className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
             <span>
-              The backend RBAC automatically extracts the role from the submitted User ID and evaluates permissions before launching the dedicated interface.
+              The backend RBAC automatically extracts the role from the submitted User ID and evaluates permissions.
             </span>
           </div>
 

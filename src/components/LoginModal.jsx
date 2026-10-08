@@ -314,23 +314,33 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }) {
                 </div>
               </div>
 
-              <button
-                type="submit"
-                disabled={authenticating}
-                className="w-full py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-semibold text-xs tracking-wide transition-all cursor-pointer flex items-center justify-center gap-2 shadow-lg shadow-cyan-600/20"
-              >
-                {authenticating ? (
-                  <>
-                    <span className="w-3.5 h-3.5 border-2 border-slate-950 border-t-transparent rounded-full animate-spin"></span>
-                    <span>Resolving Role 1-5 Clearance...</span>
-                  </>
-                ) : (
-                  <>
-                    <span>Sign In to Assigned Role</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </>
-                )}
-              </button>
+              <div className="grid grid-cols-2 gap-2 pt-1">
+                <button
+                  type="submit"
+                  disabled={authenticating}
+                  className="py-2.5 px-3 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-semibold text-xs tracking-wide transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-lg shadow-cyan-600/20"
+                >
+                  {authenticating ? (
+                    <>
+                      <span className="w-3.5 h-3.5 border-2 border-slate-950 border-t-transparent rounded-full animate-spin"></span>
+                      <span className="truncate">Resolving...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="truncate">Sign In</span>
+                      <ArrowRight className="w-3.5 h-3.5 shrink-0 hidden xs:inline" />
+                    </>
+                  )}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="py-2.5 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white text-xs font-semibold transition-all cursor-pointer flex items-center justify-center"
+                >
+                  <span>Close</span>
+                </button>
+              </div>
             </form>
           )}
 

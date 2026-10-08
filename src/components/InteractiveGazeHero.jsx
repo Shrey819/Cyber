@@ -160,34 +160,34 @@ export default function InteractiveGazeHero({
               {badge}
             </span>
 
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-white leading-tight tracking-tight">
+            <h2 className="text-xl xs:text-2xl sm:text-3xl md:text-4xl font-black text-white leading-tight tracking-tight">
               {subheading}
             </h2>
 
-            <p className="text-slate-300 text-xs sm:text-sm md:text-base min-h-[76px] sm:min-h-[84px] leading-relaxed font-normal">
+            <p className="text-slate-300 text-xs sm:text-sm md:text-base min-h-[64px] sm:min-h-[84px] leading-relaxed font-normal">
               {displayed}
               {!done && <span className="inline-block w-0.5 h-4 sm:h-5 bg-cyan-400 ml-1 animate-pulse align-middle" />}
             </p>
 
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2 w-full sm:w-auto">
+            <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 sm:gap-3 pt-2 w-full sm:w-auto">
               <button
                 onClick={() => {
                   if (setCurrentPage) setCurrentPage('contact');
                   window.scrollTo({ top: 0, behavior: 'smooth' });
                 }}
-                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-gradient-to-r from-cyan-400 to-cyan-300 hover:from-cyan-300 hover:to-cyan-200 text-slate-950 font-bold text-xs sm:text-sm transition-all shadow-[0_0_25px_rgba(0,240,255,0.3)] hover:shadow-[0_0_35px_rgba(0,240,255,0.5)] cursor-pointer group"
+                className="inline-flex items-center justify-center gap-1.5 px-3 sm:px-6 py-2.5 sm:py-3.5 rounded-xl bg-gradient-to-r from-cyan-400 to-cyan-300 hover:from-cyan-300 hover:to-cyan-200 text-slate-950 font-bold text-xs sm:text-sm transition-all shadow-[0_0_20px_rgba(0,240,255,0.25)] hover:shadow-[0_0_35px_rgba(0,240,255,0.5)] cursor-pointer group"
               >
-                <span>{ctaText}</span>
-                <ArrowRight className="w-4 h-4 text-slate-950 transition-transform group-hover:translate-x-1" />
+                <span className="truncate">{ctaText}</span>
+                <ArrowRight className="w-3.5 h-3.5 text-slate-950 transition-transform group-hover:translate-x-1 shrink-0 hidden xs:inline" />
               </button>
 
               <button
                 onClick={() => {
                   if (openEmergencyModal) openEmergencyModal();
                 }}
-                className="inline-flex items-center justify-center gap-2 px-4 py-3.5 rounded-xl bg-rose-950/50 hover:bg-rose-900/60 border border-rose-700/50 text-rose-300 font-semibold text-xs sm:text-sm transition-all cursor-pointer"
+                className="inline-flex items-center justify-center gap-1.5 px-3 sm:px-4 py-2.5 sm:py-3.5 rounded-xl bg-rose-950/50 hover:bg-rose-900/60 border border-rose-700/50 text-rose-300 font-semibold text-xs sm:text-sm transition-all cursor-pointer"
               >
-                <span>Report Incident</span>
+                <span className="truncate">Report Incident</span>
               </button>
             </div>
           </div>

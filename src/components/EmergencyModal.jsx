@@ -169,23 +169,33 @@ export default function EmergencyModal({ isOpen, onClose }) {
                   <span>All communications covered by immediate unilateral non-disclosure agreement (NDA).</span>
                 </div>
 
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="w-full py-2.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs tracking-wider uppercase transition-all cursor-pointer flex items-center justify-center gap-2 shadow-lg shadow-rose-600/30"
-                >
-                  {submitting ? (
-                    <>
-                      <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                      <span>Dispatching On-Call Responder...</span>
-                    </>
-                  ) : (
-                    <>
-                      <span>Trigger Priority 1 Incident Response</span>
-                      <ArrowRight className="w-4 h-4" />
-                    </>
-                  )}
-                </button>
+                <div className="grid grid-cols-2 gap-2 pt-1">
+                  <button
+                    type="submit"
+                    disabled={submitting}
+                    className="py-2.5 px-3 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs tracking-wider uppercase transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-lg shadow-rose-600/30"
+                  >
+                    {submitting ? (
+                      <>
+                        <span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                        <span className="truncate">Dispatching...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="truncate">Dispatch SOC</span>
+                        <ArrowRight className="w-3.5 h-3.5 shrink-0 hidden xs:inline" />
+                      </>
+                    )}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={onClose}
+                    className="py-2.5 px-3 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white text-xs font-semibold transition-all cursor-pointer flex items-center justify-center"
+                  >
+                    <span>Cancel</span>
+                  </button>
+                </div>
               </form>
             </div>
           )}

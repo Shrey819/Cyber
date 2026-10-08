@@ -136,32 +136,32 @@ export default function CompanyDevDashboard() {
       )}
 
       {/* Hero Header */}
-      <div className="p-5 sm:p-6 bg-[#0B0F19] border border-emerald-500/20 rounded-2xl relative overflow-hidden shadow-xl">
+      <div className="p-3.5 xs:p-5 sm:p-6 bg-[#0B0F19] border border-emerald-500/20 rounded-2xl relative overflow-hidden shadow-xl">
         <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-600/10 rounded-full blur-3xl pointer-events-none"></div>
 
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 relative z-10">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 sm:gap-4 relative z-10">
           <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-bold">
+            <div className="flex items-center gap-1.5 sm:gap-2 mb-1 flex-wrap">
+              <span className="px-2 py-0.5 rounded-full text-[9px] xs:text-[10px] font-mono bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-bold">
                 COMPANY DEVELOPER / SECOPS
               </span>
-              <span className="text-xs text-emerald-400 font-mono">
+              <span className="text-[11px] sm:text-xs text-emerald-400 font-mono">
                 Scoped to: {company.name} (@{company.domain})
               </span>
             </div>
-            <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+            <h1 className="text-lg xs:text-xl sm:text-2xl font-black text-white tracking-tight">
               Company SecOps Architecture & Developer Controls
             </h1>
-            <p className="text-xs text-slate-400 mt-1 max-w-2xl">
+            <p className="text-[11px] xs:text-xs text-slate-400 mt-1 max-w-2xl leading-relaxed">
               Manage enterprise API credentials, trigger deep CVE vulnerability scans, inspect TLS 1.3 cryptographic domain certificates, and configure firewall rate limiting.
             </p>
           </div>
 
-          {/* Sub-Navigation Tabs */}
-          <div className="flex flex-wrap items-center gap-1.5 p-1 bg-slate-900/90 rounded-xl border border-slate-800">
+          {/* Sub-Navigation Tabs (Horizontal swipe track on mobile) */}
+          <div className="flex items-center gap-1.5 p-1 bg-slate-900/90 rounded-xl border border-slate-800 overflow-x-auto scrollbar-none max-w-full">
             <button
               onClick={() => setActiveTab('keys')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shrink-0 ${
                 activeTab === 'keys'
                   ? 'bg-emerald-600 text-slate-950 font-bold shadow-sm'
                   : 'text-slate-400 hover:text-white'
