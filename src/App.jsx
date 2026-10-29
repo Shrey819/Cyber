@@ -11,6 +11,7 @@ import TeamPage from './pages/TeamPage';
 import ContactPage from './pages/ContactPage';
 import DashboardPage from './pages/DashboardPage';
 import LoginPage from './pages/LoginPage';
+import CheckoutPage from './pages/CheckoutPage';
 import { useAuth } from './context/AuthContext';
 
 export default function App() {
@@ -23,7 +24,7 @@ export default function App() {
   useEffect(() => {
     const handleHashChange = () => {
       const hash = window.location.hash.replace('#', '').toLowerCase();
-      if (['home', 'services', 'about', 'team', 'contact', 'dashboard', 'login'].includes(hash)) {
+      if (['home', 'services', 'about', 'team', 'contact', 'dashboard', 'login', 'checkout'].includes(hash)) {
         setCurrentPage(hash);
       }
     };
@@ -100,6 +101,13 @@ export default function App() {
           <ServicesPage 
             setCurrentPage={navigateTo}
             openEmergencyModal={() => setEmergencyModalOpen(true)}
+          />
+        )}
+
+        {currentPage === 'checkout' && (
+          <CheckoutPage 
+            onOrderSuccess={(order) => navigateTo('dashboard')}
+            onBackToStore={() => navigateTo('services')}
           />
         )}
 

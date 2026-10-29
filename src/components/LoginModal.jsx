@@ -38,7 +38,7 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }) {
 
   const detectedRole = detectRole ? detectRole(userId) : null;
 
-  const handleCredentialsLogin = (e) => {
+  const handleCredentialsLogin = async (e) => {
     e.preventDefault();
     setErrorMessage('');
     setAuthSuccess(null);
@@ -53,11 +53,11 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }) {
     }
 
     setAuthenticating(true);
-    setTimeout(() => {
-      const res = login(userId, password);
+    try {
+      const res = await login(userId, password);
       setAuthenticating(false);
 
-      if (res.success) {
+      if (res && res.success) {
         setAuthSuccess(res);
         setTimeout(() => {
           if (onLoginSuccess) {
@@ -66,9 +66,12 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess }) {
           onClose();
         }, 600);
       } else {
-        setErrorMessage(res.error || 'Authentication failed. Please verify credentials.');
+        setErrorMessage(res?.error || 'Authentication failed. Please verify credentials.');
       }
-    }, 600);
+    } catch (err) {
+      setAuthenticating(false);
+      setErrorMessage(err.message || 'Login failed. Please try again.');
+    }
   };
 
   const handleFillCredentials = (role) => {

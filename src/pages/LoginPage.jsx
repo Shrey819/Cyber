@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { 
   Shield, 
   Lock, 
@@ -8,391 +8,547 @@ import {
   ArrowRight, 
   AlertCircle, 
   CheckCircle2, 
-  Cpu, 
   Building2, 
-  Users, 
-  Code2, 
-  Globe, 
-  Sparkles,
-  Fingerprint,
-  Info
+  User, 
+  Mail,
+  ChevronRight,
+  Sparkles
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import ThemeToggle from '../components/ThemeToggle';
 
 export default function LoginPage({ onLoginSuccess, onExitToSite }) {
-  const { login, roleCredentials = [], detectRole } = useAuth();
+  const { login, registerUser, updateUserPassword, roleCredentials = [] } = useAuth();
 
-  const [userId, setUserId] = useState('');
-  const [password, setPassword] = useState('');
+  // Mode: 'login' | 'register' | 'update_password'
+  const [viewMode, setViewMode] = useState('login');
+
+  // Login form state
+  const [loginInput, setLoginInput] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [authenticating, setAuthenticating] = useState(false);
+
+  // Register form state
+  const [regData, setRegData] = useState({
+    name: '',
+    email: '',
+    companyName: '',
+    registrationNumber: '',
+    pinCode: '',
+    password: '',
+    confirmPassword: '',
+    role: 'senior_manager' // 'senior_manager' | 'company_developer' | 'employee'
+  });
+
+  // Update password state
+  const [updateData, setUpdateData] = useState({
+    email: '',
+    newPassword: '',
+    confirmNewPassword: ''
+  });
+
+  const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  const [successInfo, setSuccessInfo] = useState(null);
+  const [successMessage, setSuccessMessage] = useState('');
 
-  // Live detection of role as user types
-  const detectedRole = detectRole ? detectRole(userId) : null;
+  const clearMessages = () => {
+    setErrorMessage('');
+    setSuccessMessage('');
+  };
 
-  const handleSubmit = (e) => {
+  // 1. Handle Login
+  const handleLoginSubmit = async (e) => {
     e.preventDefault();
-    setErrorMessage('');
-    setSuccessInfo(null);
+    clearMessages();
 
-    if (!userId.trim()) {
-      setErrorMessage('Please enter your User ID or Role identifier (1-5).');
-      return;
-    }
-    if (!password.trim()) {
-      setErrorMessage('Please enter your password.');
+    if (!loginInput.trim() || !loginPassword.trim()) {
+      setErrorMessage('Please enter both your email/ID and password.');
       return;
     }
 
-    setAuthenticating(true);
+    setLoading(true);
+    try {
+      const res = await login(loginInput, loginPassword);
+      setLoading(false);
 
-    // Simulate authenticating against Zero-Trust RBAC gateway
-    setTimeout(() => {
-      const result = login(userId, password);
-      setAuthenticating(false);
-
-      if (result.success) {
-        setSuccessInfo({
-          roleNumber: result.roleNumber,
-          roleLabel: result.roleLabel,
-          user: result.user
-        });
-
-        // Short smooth transition to dashboard
+      if (res && res.success) {
+        setSuccessMessage(`Authenticated as ${res.user.name} (${res.roleLabel || res.user.role})`);
         setTimeout(() => {
-          if (onLoginSuccess) {
-            onLoginSuccess(result.user);
-          }
-        }, 650);
+          if (onLoginSuccess) onLoginSuccess(res.user);
+        }, 500);
       } else {
-        setErrorMessage(result.error || 'Authentication failed. Please verify your credentials.');
+        setErrorMessage(res?.error || 'Invalid credentials. Please verify your email/ID and password.');
       }
-    }, 500);
+    } catch (err) {
+      setLoading(false);
+      setErrorMessage(err.message || 'Login failed. Please try again.');
+    }
   };
 
-  const handleFillCredentials = (roleCred) => {
-    setUserId(roleCred.defaultUserId);
-    setPassword(roleCred.defaultPassword);
-    setErrorMessage('');
-    setSuccessInfo(null);
+  // 2. Handle User Registration
+  const handleRegisterSubmit = async (e) => {
+    e.preventDefault();
+    clearMessages();
+
+    if (!regData.name || !regData.email || !regData.password) {
+      setErrorMessage('Please fill in your name, email, and password.');
+      return;
+    }
+
+    if (regData.password.length < 6) {
+      setErrorMessage('Password must be at least 6 characters long.');
+      return;
+    }
+
+    if (regData.password !== regData.confirmPassword) {
+      setErrorMessage('Passwords do not match.');
+      return;
+    }
+
+    if (regData.pinCode && !/^\d{6}$/.test(regData.pinCode)) {
+      setErrorMessage('Please enter a valid 6-digit PIN code.');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await registerUser({
+        name: regData.name,
+        email: regData.email,
+        password: regData.password,
+        role: regData.role,
+        companyName: regData.companyName,
+        registrationNumber: regData.registrationNumber,
+        pinCode: regData.pinCode
+      });
+      setLoading(false);
+
+      if (res && res.success) {
+        setSuccessMessage('Account created successfully in Neon database! Logging you in...');
+        setTimeout(() => {
+          if (onLoginSuccess) onLoginSuccess(res.user);
+        }, 600);
+      } else {
+        setErrorMessage(res?.error || 'Failed to create account.');
+      }
+    } catch (err) {
+      setLoading(false);
+      setErrorMessage(err.message || 'Registration failed.');
+    }
   };
 
-  const getRoleIcon = (roleNum) => {
-    switch (roleNum) {
-      case 1: return <Cpu className="w-4 h-4 text-purple-400" />;
-      case 2: return <Building2 className="w-4 h-4 text-amber-400" />;
-      case 3: return <Users className="w-4 h-4 text-cyan-400" />;
-      case 4: return <Code2 className="w-4 h-4 text-emerald-400" />;
-      case 5: return <KeyRound className="w-4 h-4 text-rose-400" />;
-      default: return <Shield className="w-4 h-4 text-cyan-400" />;
+  // 3. Handle Password Update
+  const handleUpdatePasswordSubmit = async (e) => {
+    e.preventDefault();
+    clearMessages();
+
+    if (!updateData.email || !updateData.newPassword) {
+      setErrorMessage('Please enter your email and new password.');
+      return;
+    }
+
+    if (updateData.newPassword.length < 6) {
+      setErrorMessage('New password must be at least 6 characters long.');
+      return;
+    }
+
+    if (updateData.newPassword !== updateData.confirmNewPassword) {
+      setErrorMessage('Confirmation password does not match.');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await updateUserPassword(updateData.email, updateData.newPassword);
+      setLoading(false);
+
+      if (res && res.success) {
+        setSuccessMessage(res.message || 'Your password has been updated in database! You can now log in.');
+        setLoginInput(updateData.email);
+        setLoginPassword(updateData.newPassword);
+        setTimeout(() => setViewMode('login'), 1500);
+      } else {
+        setErrorMessage(res?.error || 'Failed to update password.');
+      }
+    } catch (err) {
+      setLoading(false);
+      setErrorMessage(err.message || 'Password update request failed.');
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#080B11] text-slate-100 flex flex-col justify-between relative overflow-hidden font-sans selection:bg-cyan-500/20 selection:text-cyan-300">
-      
-      {/* Background glow & cyber grid elements */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(6,182,212,0.12),rgba(255,255,255,0))] pointer-events-none" />
-      <div className="absolute top-1/4 left-10 w-96 h-96 bg-cyan-600/5 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-1/4 right-10 w-96 h-96 bg-purple-600/5 rounded-full blur-3xl pointer-events-none" />
-
-      {/* Top Header Bar */}
-      <header className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6 flex items-center justify-between border-b border-slate-800/80">
-        <button 
+    <div className="min-h-screen bg-[#080B11] text-slate-100 flex flex-col justify-between font-sans relative overflow-hidden">
+      {/* Top Bar */}
+      <header className="w-full border-b border-slate-800/80 px-4 sm:px-8 py-3.5 flex items-center justify-between z-20">
+        <button
           onClick={onExitToSite}
-          className="flex items-center gap-2.5 group cursor-pointer text-left"
+          className="flex items-center gap-2.5 text-left focus:outline-none"
         >
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-cyan-600 via-blue-600 to-indigo-600 p-[1.5px] shadow-lg shadow-cyan-500/20 group-hover:shadow-cyan-500/40 transition-all">
-            <div className="w-full h-full bg-[#090D16] rounded-[10px] flex items-center justify-center">
-              <Shield className="w-5 h-5 text-cyan-400 group-hover:scale-110 transition-transform" />
-            </div>
+          <div className="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400">
+            <Shield className="w-4 h-4" />
           </div>
           <div>
-            <div className="flex items-center gap-1.5">
-              <span className="text-lg font-black tracking-tight text-white group-hover:text-cyan-300 transition-colors">VORTEX</span>
-              <span className="text-lg font-light tracking-widest text-cyan-400">CYBER</span>
-            </div>
-            <p className="text-[9px] font-mono tracking-widest uppercase text-slate-400 -mt-0.5">Enterprise RBAC Portal</p>
+            <span className="font-extrabold text-white text-base tracking-tight">VORTEX CYBER</span>
+            <span className="text-[10px] text-slate-500 font-mono block -mt-0.5">AUTHENTICATION GATEWAY</span>
           </div>
         </button>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <ThemeToggle />
-
           <button
             onClick={onExitToSite}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 text-slate-300 hover:text-white text-xs font-medium transition-all cursor-pointer"
+            className="text-xs text-slate-400 hover:text-white px-3 py-1.5 rounded-lg border border-slate-800 bg-slate-900/60"
           >
-            <Globe className="w-3.5 h-3.5 text-cyan-400" />
-            <span>Public Website</span>
+            Back to Website
           </button>
         </div>
       </header>
 
-      {/* Main Container */}
-      <main className="relative z-10 flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 py-8 sm:py-12 flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-12">
-        
-        {/* Left Side: Common Login Form */}
-        <div className="w-full max-w-md bg-[#0D121F]/90 border border-cyan-500/30 rounded-2xl p-6 sm:p-8 shadow-[0_0_50px_rgba(0,240,255,0.1)] backdrop-blur-xl relative">
+      {/* Main Authentication Container */}
+      <div className="flex-1 flex items-center justify-center px-4 py-8 relative z-10">
+        <div className="w-full max-w-md bg-[#0B0F19] border border-slate-800 rounded-2xl shadow-2xl p-6 sm:p-8 space-y-5">
           
-          {/* Top subtle highlight line */}
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-500 rounded-t-2xl" />
-
-          {/* Form Header */}
-          <div className="mb-6">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 uppercase tracking-wider">
-                Common Portal Gateway
-              </span>
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="text-[10px] font-mono text-emerald-400">ONLINE</span>
-            </div>
-
-            <h1 className="text-2xl font-bold text-white tracking-tight">Enterprise Sign In</h1>
-            <p className="text-xs text-slate-400 mt-1">
-              Enter your User ID and password. The system automatically decides whether to grant access to <strong className="text-cyan-300">Role 1, 2, 3, 4, or 5</strong>.
+          {/* View Mode Switcher Header */}
+          <div className="text-center space-y-1">
+            <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+              {viewMode === 'login' && 'Sign In to Your Account'}
+              {viewMode === 'register' && 'Register New Organization / User'}
+              {viewMode === 'update_password' && 'Update Your Account Password'}
+            </h2>
+            <p className="text-xs text-slate-400">
+              {viewMode === 'login' && 'Enter your registered email and password to proceed.'}
+              {viewMode === 'register' && 'Set up your credentials to manage tools and teams.'}
+              {viewMode === 'update_password' && 'Enter your registered email and choose a new password.'}
             </p>
           </div>
 
-          {/* Error Message */}
+          {/* Feedback Alerts */}
           {errorMessage && (
-            <div className="mb-5 p-3 rounded-xl bg-rose-950/40 border border-rose-500/40 text-rose-300 text-xs flex items-start gap-2.5 animate-fadeIn">
-              <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+            <div className="p-3 bg-rose-950/60 border border-rose-500/40 rounded-xl text-rose-300 text-xs flex items-center gap-2 animate-fadeIn">
+              <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
               <span>{errorMessage}</span>
             </div>
           )}
 
-          {/* Success Message */}
-          {successInfo && (
-            <div className="mb-5 p-3.5 rounded-xl bg-emerald-950/40 border border-emerald-500/40 text-emerald-300 text-xs flex items-center gap-3 animate-fadeIn">
-              <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
-              <div>
-                <p className="font-bold text-white">Access Granted: Role {successInfo.roleNumber}</p>
-                <p className="text-[11px] text-emerald-400">{successInfo.roleLabel} • Launching Dashboard...</p>
-              </div>
+          {successMessage && (
+            <div className="p-3 bg-emerald-950/60 border border-emerald-500/40 rounded-xl text-emerald-300 text-xs flex items-center gap-2 animate-fadeIn">
+              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+              <span>{successMessage}</span>
             </div>
           )}
 
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
-            
-            {/* User ID Field */}
-            <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <label className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
-                  <Fingerprint className="w-3.5 h-3.5 text-cyan-400" />
-                  <span>User ID / Username</span>
+          {/* MODE 1: LOGIN */}
+          {viewMode === 'login' && (
+            <form onSubmit={handleLoginSubmit} className="space-y-4">
+              <div>
+                <label className="text-xs font-semibold text-slate-300 block mb-1">
+                  Email / User ID
                 </label>
-                
-                {/* Real-time Role Detector pill */}
-                {detectedRole && (
-                  <span className={`text-[10px] font-mono px-2 py-0.5 rounded border font-semibold animate-fadeIn ${detectedRole.colorBadge}`}>
-                    Role {detectedRole.roleNumber}: {detectedRole.roleLabel}
-                  </span>
-                )}
+                <div className="relative">
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. marcus.mgr@apextech.com or adminmgr"
+                    value={loginInput}
+                    onChange={(e) => setLoginInput(e.target.value)}
+                    className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-cyan-500"
+                  />
+                  <Mail className="w-3.5 h-3.5 text-slate-500 absolute right-3 top-1/2 -translate-y-1/2" />
+                </div>
               </div>
 
-              <div className="relative">
-                <input
-                  type="text"
-                  value={userId}
-                  onChange={(e) => {
-                    setUserId(e.target.value);
-                    if (errorMessage) setErrorMessage('');
-                  }}
-                  placeholder="e.g. superdev, adminmgr, seniormgr, companydev, employee (or 1-5)"
-                  className="w-full px-3.5 py-2.5 bg-slate-950/80 border border-slate-700 hover:border-slate-600 focus:border-cyan-400 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none transition-colors"
-                  autoFocus
-                />
+              <div>
+                <div className="flex justify-between items-center mb-1">
+                  <label className="text-xs font-semibold text-slate-300 block">Password</label>
+                  <button
+                    type="button"
+                    onClick={() => setViewMode('update_password')}
+                    className="text-[11px] text-cyan-400 hover:underline"
+                  >
+                    Forgot or Update Password?
+                  </button>
+                </div>
+                <div className="relative">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    required
+                    placeholder="Enter your password"
+                    value={loginPassword}
+                    onChange={(e) => setLoginPassword(e.target.value)}
+                    className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-cyan-500"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
+                  >
+                    {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                  </button>
+                </div>
               </div>
-              <p className="text-[10px] text-slate-500 mt-1">
-                Tip: You can enter role IDs (<code>1</code>, <code>2</code>, <code>3</code>, <code>4</code>, <code>5</code>) or handles (<code>superdev</code>, <code>adminmgr</code>, <code>seniormgr</code>, <code>companydev</code>, <code>employee</code>).
-              </p>
-            </div>
 
-            {/* Password Field */}
-            <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <label className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
-                  <Lock className="w-3.5 h-3.5 text-cyan-400" />
-                  <span>Password</span>
-                </label>
-                <span className="text-[10px] font-mono text-slate-400">Default: password123</span>
-              </div>
-
-              <div className="relative">
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={(e) => {
-                    setPassword(e.target.value);
-                    if (errorMessage) setErrorMessage('');
-                  }}
-                  placeholder="Enter password"
-                  className="w-full px-3.5 py-2.5 pr-10 bg-slate-950/80 border border-slate-700 hover:border-slate-600 focus:border-cyan-400 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none transition-colors"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white cursor-pointer"
-                >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
-            </div>
-
-            {/* Action Buttons: 2 in a row on mobile instead of full-width giant button */}
-            <div className="grid grid-cols-2 gap-2 pt-1">
               <button
                 type="submit"
-                disabled={authenticating}
-                className="py-2.5 px-3 rounded-xl bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 text-white font-semibold text-xs tracking-wide transition-all shadow-md shadow-cyan-600/20 hover:shadow-cyan-500/30 flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+                disabled={loading}
+                className="w-full py-2.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-bold text-xs rounded-xl shadow-lg shadow-cyan-500/20 flex items-center justify-center gap-2 transition-all disabled:opacity-50"
               >
-                {authenticating ? (
-                  <>
-                    <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    <span className="truncate">Verifying...</span>
-                  </>
-                ) : (
-                  <>
-                    <KeyRound className="w-3.5 h-3.5 text-cyan-200 shrink-0" />
-                    <span className="truncate">Sign In</span>
-                    <ArrowRight className="w-3.5 h-3.5 text-cyan-200 shrink-0 hidden xs:inline" />
-                  </>
-                )}
+                {loading ? 'Verifying...' : 'Sign In'}
+                <ArrowRight className="w-3.5 h-3.5" />
               </button>
+
+              <div className="pt-2 text-center text-xs text-slate-400">
+                Don't have an account yet?{' '}
+                <button
+                  type="button"
+                  onClick={() => {
+                    clearMessages();
+                    setViewMode('register');
+                  }}
+                  className="text-cyan-400 font-bold hover:underline ml-1"
+                >
+                  Register New Account
+                </button>
+              </div>
+            </form>
+          )}
+
+          {/* MODE 2: REGISTER WITH PASSWORD */}
+          {viewMode === 'register' && (
+            <form onSubmit={handleRegisterSubmit} className="space-y-3.5">
+              <div>
+                <label className="text-xs font-semibold text-slate-300 block mb-1">Full Name *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Ramesh Kumar"
+                  value={regData.name}
+                  onChange={(e) => setRegData({ ...regData, name: e.target.value })}
+                  className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-cyan-500"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-300 block mb-1">Corporate Email (Login ID) *</label>
+                <input
+                  type="email"
+                  required
+                  placeholder="ramesh@company.in"
+                  value={regData.email}
+                  onChange={(e) => setRegData({ ...regData, email: e.target.value })}
+                  className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-cyan-500"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-semibold text-slate-300 block mb-1">Company Name</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Cyber India Pvt Ltd"
+                    value={regData.companyName}
+                    onChange={(e) => setRegData({ ...regData, companyName: e.target.value })}
+                    className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-cyan-500"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-slate-300 block mb-1">GSTIN / PIN (6 digits)</label>
+                  <input
+                    type="text"
+                    placeholder="400051"
+                    maxLength={6}
+                    value={regData.pinCode}
+                    onChange={(e) => setRegData({ ...regData, pinCode: e.target.value.replace(/\D/g, '').slice(0, 6) })}
+                    className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-cyan-500 font-mono"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-300 block mb-1">Role in Organization</label>
+                <select
+                  value={regData.role}
+                  onChange={(e) => setRegData({ ...regData, role: e.target.value })}
+                  className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-cyan-500"
+                >
+                  <option value="senior_manager">Customer Manager (Primary Admin & Buyer)</option>
+                  <option value="company_developer">Company Developer (Security & Scans)</option>
+                  <option value="employee">Employee (Awareness & Reporting)</option>
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-semibold text-slate-300 block mb-1">Set Password *</label>
+                  <input
+                    type="password"
+                    required
+                    placeholder="Min 6 chars"
+                    value={regData.password}
+                    onChange={(e) => setRegData({ ...regData, password: e.target.value })}
+                    className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-cyan-500"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-slate-300 block mb-1">Confirm Password *</label>
+                  <input
+                    type="password"
+                    required
+                    placeholder="Repeat password"
+                    value={regData.confirmPassword}
+                    onChange={(e) => setRegData({ ...regData, confirmPassword: e.target.value })}
+                    className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-cyan-500"
+                  />
+                </div>
+              </div>
 
               <button
-                type="button"
-                onClick={onExitToSite}
-                className="py-2.5 px-3 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 text-slate-300 hover:text-white font-medium text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                type="submit"
+                disabled={loading}
+                className="w-full py-2.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-bold text-xs rounded-xl shadow-lg shadow-cyan-500/20 flex items-center justify-center gap-2 transition-all disabled:opacity-50 mt-2"
               >
-                <Globe className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
-                <span className="truncate">Public Site</span>
+                {loading ? 'Creating Account...' : 'Complete Registration'}
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+
+              <div className="pt-2 text-center text-xs text-slate-400">
+                Already registered?{' '}
+                <button
+                  type="button"
+                  onClick={() => {
+                    clearMessages();
+                    setViewMode('login');
+                  }}
+                  className="text-cyan-400 font-bold hover:underline ml-1"
+                >
+                  Back to Sign In
+                </button>
+              </div>
+            </form>
+          )}
+
+          {/* MODE 3: UPDATE PASSWORD */}
+          {viewMode === 'update_password' && (
+            <form onSubmit={handleUpdatePasswordSubmit} className="space-y-4">
+              <div>
+                <label className="text-xs font-semibold text-slate-300 block mb-1">
+                  Registered Corporate Email *
+                </label>
+                <div className="relative">
+                  <input
+                    type="email"
+                    required
+                    placeholder="Enter your registered email"
+                    value={updateData.email}
+                    onChange={(e) => setUpdateData({ ...updateData, email: e.target.value })}
+                    className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-cyan-500"
+                  />
+                  <Mail className="w-3.5 h-3.5 text-slate-500 absolute right-3 top-1/2 -translate-y-1/2" />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-300 block mb-1">
+                  New Password (Min 6 characters) *
+                </label>
+                <div className="relative">
+                  <input
+                    type="password"
+                    required
+                    placeholder="Enter new password"
+                    value={updateData.newPassword}
+                    onChange={(e) => setUpdateData({ ...updateData, newPassword: e.target.value })}
+                    className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-cyan-500"
+                  />
+                  <Lock className="w-3.5 h-3.5 text-slate-500 absolute right-3 top-1/2 -translate-y-1/2" />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-300 block mb-1">
+                  Confirm New Password *
+                </label>
+                <div className="relative">
+                  <input
+                    type="password"
+                    required
+                    placeholder="Repeat new password"
+                    value={updateData.confirmNewPassword}
+                    onChange={(e) => setUpdateData({ ...updateData, confirmNewPassword: e.target.value })}
+                    className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-cyan-500"
+                  />
+                  <Lock className="w-3.5 h-3.5 text-slate-500 absolute right-3 top-1/2 -translate-y-1/2" />
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                className="w-full py-2.5 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs rounded-xl shadow-lg shadow-cyan-500/20 flex items-center justify-center gap-2 transition-all"
+              >
+                Update & Save Password
+              </button>
+
+              <div className="text-center pt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    clearMessages();
+                    setViewMode('login');
+                  }}
+                  className="text-xs text-slate-400 hover:text-white"
+                >
+                  ← Back to Sign In
+                </button>
+              </div>
+            </form>
+          )}
+
+          {/* Quick Demo Credentials Footer */}
+          <div className="pt-4 border-t border-slate-800 text-[11px] text-slate-500 text-center">
+            <span className="block mb-1.5 font-mono">Quick Demo Roles (Click to autofill):</span>
+            <div className="flex flex-wrap justify-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => {
+                  setLoginInput('owner@vortex.internal');
+                  setLoginPassword('owner123');
+                  setViewMode('login');
+                }}
+                className="px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-amber-300 hover:border-amber-500 font-semibold"
+              >
+                Owner Manager (Singleton)
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setLoginInput('seniormgr');
+                  setLoginPassword('manager123');
+                  setViewMode('login');
+                }}
+                className="px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-cyan-300 hover:border-cyan-500"
+              >
+                Customer Manager
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setLoginInput('superdev');
+                  setLoginPassword('superdev123');
+                  setViewMode('login');
+                }}
+                className="px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-purple-300 hover:border-purple-500"
+              >
+                Owner Tech
               </button>
             </div>
-          </form>
-
-          {/* Security Notice */}
-          <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-[9.5px] sm:text-[10px] text-slate-500 font-mono">
-            <span>FIPS 140-3 ZERO-TRUST</span>
-            <span className="text-cyan-400">SHA-256</span>
-          </div>
-        </div>
-
-        {/* Right Side: Role Decision Guide & 1-Click Tester */}
-        <div className="w-full max-w-xl space-y-3">
-          
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-            <div>
-              <h2 className="text-sm sm:text-base font-bold text-white flex items-center gap-2">
-                <span>Role Credentials & Quick-Fill</span>
-                <span className="text-[9px] sm:text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">
-                  5 ROLES
-                </span>
-              </h2>
-              <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5">
-                Tap any role chip or card to auto-fill and test:
-              </p>
-            </div>
-          </div>
-
-          {/* Horizontal Role Selector Chips Bar for rapid 1-tap mobile selection */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none select-none">
-            {roleCredentials.map((role) => {
-              const isSelected = detectedRole?.roleNumber === role.roleNumber;
-              return (
-                <button
-                  key={role.roleNumber}
-                  type="button"
-                  onClick={() => handleFillCredentials(role)}
-                  className={`shrink-0 px-2.5 py-1.5 rounded-lg text-[11px] font-mono flex items-center gap-1.5 border transition-all cursor-pointer ${
-                    isSelected
-                      ? 'bg-cyan-500/20 text-cyan-300 border-cyan-400/80 font-bold shadow-sm'
-                      : 'bg-slate-900/80 hover:bg-slate-800 text-slate-400 border-slate-800 hover:text-white'
-                  }`}
-                >
-                  <span className={`w-4 h-4 rounded text-[9px] font-bold text-white flex items-center justify-center bg-gradient-to-tr ${role.accentGrad}`}>
-                    {role.roleNumber}
-                  </span>
-                  <span>{role.roleLabel.replace('Developer', 'Dev').replace('Manager', 'Mgr')}</span>
-                </button>
-              );
-            })}
-          </div>
-
-          {/* 2-Column Responsive Role Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            {roleCredentials.map((role) => {
-              const isSelected = detectedRole?.roleNumber === role.roleNumber;
-              return (
-                <div
-                  key={role.roleNumber}
-                  className={`p-3 rounded-xl border transition-all flex flex-col justify-between ${
-                    isSelected
-                      ? 'bg-slate-900/95 border-cyan-400/80 shadow-[0_0_15px_rgba(0,240,255,0.12)] ring-1 ring-cyan-400/50'
-                      : 'bg-[#0D121F]/70 border-slate-800/90 hover:border-slate-700 hover:bg-slate-900/50'
-                  }`}
-                >
-                  {/* Top info */}
-                  <div className="flex items-start gap-2.5 mb-2">
-                    <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 text-xs font-bold font-mono bg-gradient-to-tr ${role.accentGrad} text-white shadow`}>
-                      {role.roleNumber}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center justify-between gap-1">
-                        <span className="text-xs font-bold text-white truncate">
-                          {role.roleLabel}
-                        </span>
-                        <span className="text-[9.5px] font-mono text-cyan-400 shrink-0">
-                          #{role.roleNumber}
-                        </span>
-                      </div>
-                      <p className="text-[10px] text-slate-400 truncate">
-                        {role.personName} • {role.company.split(' ')[0]}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Credentials row + Quick button combined */}
-                  <div className="pt-2 border-t border-slate-800/70 flex items-center justify-between gap-1.5 text-[9.5px] font-mono">
-                    <div className="text-slate-400 truncate">
-                      ID: <strong className="text-cyan-300">{role.defaultUserId}</strong>
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={() => handleFillCredentials(role)}
-                      className="shrink-0 px-2 py-1 rounded bg-cyan-950/70 hover:bg-cyan-900 border border-cyan-500/40 hover:border-cyan-400 text-cyan-300 text-[10px] font-semibold flex items-center gap-1 transition-all cursor-pointer"
-                    >
-                      <Sparkles className="w-2.5 h-2.5 text-cyan-400" />
-                      <span>Use Role {role.roleNumber}</span>
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          <div className="p-2.5 rounded-xl bg-slate-900/50 border border-slate-800 text-slate-400 text-[10px] sm:text-[11px] flex items-center gap-2">
-            <Info className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
-            <span>
-              The backend RBAC automatically extracts the role from the submitted User ID and evaluates permissions.
-            </span>
           </div>
 
         </div>
-
-      </main>
+      </div>
 
       {/* Footer */}
-      <footer className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 py-4 text-center text-[10px] font-mono text-slate-500 border-t border-slate-800/80">
-        VORTEX CYBER DEFENSE • MULTI-TENANT RBAC ARCHITECTURE • ROLES 1 TO 5
+      <footer className="w-full border-t border-slate-800/80 px-4 py-3 text-center text-[11px] text-slate-500">
+        TLS 1.3 End-to-End Encrypted Authentication • Vortex Cyber Technologies Pvt Ltd
       </footer>
-
     </div>
   );
 }

@@ -13,13 +13,16 @@ import {
   Activity,
   LayoutDashboard,
   User,
-  Sparkles
+  Sparkles,
+  ShoppingBag
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useStore } from '../context/StoreContext';
 import ThemeToggle from './ThemeToggle';
 
 export default function Navbar({ currentPage, setCurrentPage, openLoginModal, openEmergencyModal }) {
   const { currentUser } = useAuth();
+  const { cart } = useStore();
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -33,7 +36,7 @@ export default function Navbar({ currentPage, setCurrentPage, openLoginModal, op
 
   const baseNavItems = [
     { id: 'home', label: 'Home' },
-    { id: 'services', label: 'What We Provide' },
+    { id: 'services', label: 'Security Store & Services' },
     { id: 'about', label: 'Goals & Vision' },
     { id: 'team', label: 'Our Team' },
     { id: 'contact', label: 'Contact Us' },
@@ -50,9 +53,11 @@ export default function Navbar({ currentPage, setCurrentPage, openLoginModal, op
   };
 
   const roleBadgeColors = {
+    owner_manager: 'bg-amber-500/20 text-amber-300 border-amber-500/40',
     super_developer: 'bg-purple-500/20 text-purple-300 border-purple-500/40',
     admin_manager: 'bg-amber-500/20 text-amber-300 border-amber-500/40',
     senior_manager: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40',
+    company_manager: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40',
     company_developer: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
     employee: 'bg-rose-500/20 text-rose-300 border-rose-500/40',
   };
@@ -81,37 +86,61 @@ export default function Navbar({ currentPage, setCurrentPage, openLoginModal, op
           </span>
         </div>
 
-        <div className="flex items-center gap-3 shrink-0">
-          <button 
-            onClick={openEmergencyModal}
-            className="flex items-center gap-1.5 text-rose-400 hover:text-rose-300 font-semibold transition-colors duration-150 cursor-pointer text-[10px] sm:text-[11px]"
-          >
-            <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></span>
-            <span className="hidden xs:inline">24/7 Hotline:</span>
-            <span>1-800-VORTEX-SOC</span>
-          </button>
+        {/* Right Auth / Status snippet: Clear User Identity Pill */}
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+          {currentUser ? (
+            <div className="flex items-center gap-2 bg-[#0C111D] border border-cyan-500/30 px-2.5 py-1 rounded-xl text-[11px] shadow-sm">
+              <div className="w-5 h-5 rounded-full bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center font-bold text-white text-[10px] shrink-0 shadow-sm">
+                {currentUser.name?.charAt(0)?.toUpperCase() || 'U'}
+              </div>
+              <div className="flex flex-col text-left leading-tight max-w-[200px] truncate">
+                <span className="font-bold text-white text-[11px] truncate">
+                  {currentUser.name}
+                </span>
+                <span className="text-[9.5px] text-slate-400 font-mono truncate">
+                  {currentUser.email}
+                </span>
+              </div>
+              <span className="hidden sm:inline text-slate-700">|</span>
+              <div className="hidden sm:flex flex-col text-left leading-tight max-w-[160px] truncate">
+                <span className="text-[10px] text-cyan-400 font-semibold truncate">
+                  {currentUser.companyName || 'Independent'}
+                </span>
+                <span className={`px-1.5 py-0.2 rounded text-[8.5px] font-mono border font-bold inline-block w-fit mt-0.5 ${roleBadgeColors[currentUser.role] || 'bg-slate-800 text-slate-300'}`}>
+                  {currentUser.roleLabel || currentUser.role}
+                </span>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <span className="text-slate-400 text-[10px] sm:text-[11px] hidden sm:inline">
+                Enterprise Multi-Tenant Node
+              </span>
+              <span className="text-cyan-400 text-[10px] font-mono">v2.4-SEC</span>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Main Navigation Bar */}
-      <nav 
-        className={`w-full sticky top-0 z-40 transition-all duration-300 ${
-          isScrolled 
-            ? 'bg-[#080B11]/95 backdrop-blur-xl border-b border-slate-800/80 shadow-2xl py-2.5 sm:py-3' 
-            : 'bg-[#080B11]/80 backdrop-blur-md border-b border-slate-800/40 py-3 sm:py-4.5'
+      {/* Main Glassmorphic Navigation Bar */}
+      <header
+        className={`sticky top-0 z-40 transition-all duration-300 border-b ${
+          isScrolled
+            ? 'bg-[#080B11]/90 backdrop-blur-xl border-cyan-900/40 shadow-[0_4px_30px_rgba(0,0,0,0.8)] py-2 sm:py-2.5'
+            : 'bg-[#080B11]/70 backdrop-blur-md border-slate-800/80 py-3 sm:py-3.5'
         }`}
       >
-        <div className="w-full max-w-[1720px] mx-auto px-4 sm:px-6 md:px-10 lg:px-14 xl:px-20 flex items-center justify-between">
-          
-          {/* Logo & Brand Identity */}
-          <button 
-            onClick={() => handleNavClick('home')} 
+        <div className="max-w-[1720px] mx-auto px-3 sm:px-6 md:px-10 lg:px-14 xl:px-20 flex items-center justify-between gap-2 sm:gap-4">
+          {/* Logo & Brand Wordmark */}
+          <button
+            onClick={() => handleNavClick('home')}
             className="flex items-center gap-2.5 sm:gap-3 group text-left cursor-pointer focus:outline-none"
+            aria-label="Vortex Cybersecurity Home"
           >
             <div className="relative">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-cyan-600 via-blue-600 to-indigo-600 p-[1.5px] shadow-lg shadow-cyan-500/20 group-hover:shadow-cyan-500/40 transition-all duration-300">
-                <div className="w-full h-full bg-[#090D16] rounded-[10px] flex items-center justify-center">
-                  <Shield className="w-4 h-4 sm:w-5 sm:h-5 text-cyan-400 group-hover:scale-110 transition-transform duration-300" />
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 p-[1.5px] transition-transform duration-300 group-hover:scale-105 shadow-[0_0_20px_rgba(0,240,255,0.3)]">
+                <div className="w-full h-full bg-[#080B11] rounded-[10px] flex items-center justify-center">
+                  <Shield className="w-5 h-5 sm:w-5 sm:h-5 text-cyan-400 transition-transform duration-300 group-hover:rotate-6" />
                 </div>
               </div>
               <div className="absolute -top-0.5 -right-0.5 w-2 h-2 sm:w-2.5 sm:h-2.5 bg-cyan-400 rounded-full blur-[2px] opacity-70"></div>
@@ -157,6 +186,20 @@ export default function Navbar({ currentPage, setCurrentPage, openLoginModal, op
 
           {/* Right Action CTA Buttons */}
           <div className="hidden sm:flex items-center gap-2 md:gap-2.5">
+            {/* Shopping Cart Button */}
+            <button
+              onClick={() => handleNavClick('checkout')}
+              className="relative p-2 rounded-xl text-slate-300 hover:text-white bg-slate-900/80 hover:bg-slate-800 border border-slate-800 transition-colors"
+              title="Shopping Cart & B2B Checkout"
+            >
+              <ShoppingBag className="w-4 h-4 text-cyan-400" />
+              {cart.length > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-cyan-500 text-slate-950 font-black text-[9px] flex items-center justify-center animate-pulse">
+                  {cart.length}
+                </span>
+              )}
+            </button>
+
             {/* Theme Mode Switcher */}
             <ThemeToggle />
 
@@ -176,7 +219,7 @@ export default function Navbar({ currentPage, setCurrentPage, openLoginModal, op
                 className="relative group px-3.5 md:px-4 py-2 rounded-xl text-xs font-semibold text-white bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 transition-all duration-200 shadow-md shadow-cyan-600/20 hover:shadow-cyan-500/30 flex items-center gap-2 cursor-pointer border border-cyan-400/40"
               >
                 <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>
-                <span>Dashboard ({currentUser.roleLabel.split(' ')[0]})</span>
+                <span>Dashboard ({currentUser?.roleLabel ? currentUser.roleLabel.split(' ')[0] : 'Portal'})</span>
                 <ChevronRight className="w-3 h-3 text-cyan-200 group-hover:translate-x-0.5 transition-transform" />
               </button>
             ) : (
@@ -194,6 +237,18 @@ export default function Navbar({ currentPage, setCurrentPage, openLoginModal, op
 
           {/* Mobile Menu & Quick Login Buttons */}
           <div className="flex sm:hidden items-center gap-1.5">
+            <button
+              onClick={() => handleNavClick('checkout')}
+              className="relative p-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-300"
+            >
+              <ShoppingBag className="w-4 h-4 text-cyan-400" />
+              {cart.length > 0 && (
+                <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-cyan-500 text-slate-950 font-bold text-[8px] flex items-center justify-center">
+                  {cart.length}
+                </span>
+              )}
+            </button>
+
             <ThemeToggle />
 
             <button
@@ -224,54 +279,23 @@ export default function Navbar({ currentPage, setCurrentPage, openLoginModal, op
                   <button
                     key={item.id}
                     onClick={() => handleNavClick(item.id)}
-                    className={`flex items-center justify-between w-full px-4 py-3 rounded-xl text-sm sm:text-base font-medium transition-colors ${
+                    className={`px-4 py-2.5 rounded-xl text-left text-sm font-medium flex items-center justify-between ${
                       active
-                        ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 font-bold shadow-[0_0_15px_rgba(0,240,255,0.15)]'
+                        ? 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 font-semibold'
                         : item.isSpecial
-                        ? 'bg-cyan-950/40 text-cyan-300 border border-cyan-500/20'
-                        : 'text-slate-300 hover:bg-slate-800/70 hover:text-white'
+                        ? 'text-cyan-300 bg-cyan-950/30 border border-cyan-500/20'
+                        : 'text-slate-300 hover:bg-slate-900 hover:text-white'
                     }`}
                   >
-                    <div className="flex items-center gap-2">
-                      {item.isSpecial && <LayoutDashboard className="w-4 h-4 text-cyan-400" />}
-                      <span>{item.label}</span>
-                    </div>
-                    <ChevronRight className={`w-4 h-4 ${active ? 'text-cyan-400' : 'text-slate-600'}`} />
+                    <span>{item.label}</span>
+                    <ChevronRight className="w-4 h-4 text-slate-500" />
                   </button>
                 );
               })}
             </div>
-
-            <div className="pt-3 border-t border-slate-800/80 grid grid-cols-2 gap-2">
-              <button
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  openEmergencyModal();
-                }}
-                className="py-2.5 px-2.5 rounded-xl bg-rose-950/70 border border-rose-700/60 text-rose-300 text-xs font-semibold flex items-center justify-center gap-1.5 cursor-pointer"
-              >
-                <PhoneCall className="w-3.5 h-3.5 text-rose-400 shrink-0" />
-                <span className="truncate">Emergency Hotline</span>
-              </button>
-
-              <button
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  if (currentUser) {
-                    handleNavClick('dashboard');
-                  } else {
-                    handleNavClick('login');
-                  }
-                }}
-                className="py-2.5 px-2.5 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 text-white text-xs font-semibold flex items-center justify-center gap-1.5 shadow-md shadow-cyan-600/25 cursor-pointer"
-              >
-                <KeyRound className="w-3.5 h-3.5 shrink-0" />
-                <span className="truncate">{currentUser ? 'Dashboard' : 'Portal Login'}</span>
-              </button>
-            </div>
           </div>
         )}
-      </nav>
+      </header>
     </>
   );
 }

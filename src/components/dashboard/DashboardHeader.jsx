@@ -25,25 +25,31 @@ export default function DashboardHeader({ onExitToSite, onSwitchUser }) {
   if (!currentUser) return null;
 
   const roleColorClasses = {
+    owner_manager: 'bg-amber-500/20 text-amber-300 border-amber-500/40',
     super_developer: 'bg-purple-500/20 text-purple-300 border-purple-500/40',
     admin_manager: 'bg-amber-500/20 text-amber-300 border-amber-500/40',
     senior_manager: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40',
+    company_manager: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40',
     company_developer: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
     employee: 'bg-rose-500/20 text-rose-300 border-rose-500/40',
   };
 
   const roleDotMap = {
+    owner_manager: 'bg-amber-400',
     super_developer: 'bg-purple-400',
     admin_manager: 'bg-amber-400',
     senior_manager: 'bg-cyan-400',
+    company_manager: 'bg-cyan-400',
     company_developer: 'bg-emerald-400',
     employee: 'bg-rose-400',
   };
 
   const roleNumberMap = {
+    owner_manager: 1,
     super_developer: 1,
     admin_manager: 2,
     senior_manager: 3,
+    company_manager: 3,
     company_developer: 4,
     employee: 5,
   };
@@ -101,10 +107,27 @@ export default function DashboardHeader({ onExitToSite, onSwitchUser }) {
 
           <span className="hidden sm:inline text-slate-700">|</span>
 
-          {/* Company context indicator */}
-          <div className="hidden md:flex items-center gap-1.5 text-xs text-slate-400 font-mono">
-            <Building2 className="w-3.5 h-3.5 text-slate-500" />
-            <span className="text-slate-200 font-semibold truncate max-w-[180px]">{currentUser.companyName}</span>
+          {/* User & Company Identity Badge (Clear Name, Company, Email, Role) */}
+          <div className="flex items-center gap-2 bg-[#0C111D] border border-cyan-500/30 px-3 py-1.5 rounded-xl text-xs shadow-sm">
+            <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center font-bold text-white text-xs shrink-0 shadow-sm">
+              {currentUser.name?.charAt(0)?.toUpperCase() || 'U'}
+            </div>
+            <div className="flex flex-col text-left leading-tight">
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className="font-bold text-white text-xs">{currentUser.name}</span>
+                <span className="text-[10px] text-slate-400 font-mono">({currentUser.email})</span>
+              </div>
+              <div className="flex items-center gap-1.5 mt-0.5 text-[10px]">
+                <Building2 className="w-3 h-3 text-cyan-400 shrink-0" />
+                <span className="text-cyan-300 font-semibold truncate max-w-[150px] sm:max-w-[200px]">
+                  {currentUser.companyName || 'Independent'}
+                </span>
+                <span className="text-slate-600">•</span>
+                <span className={`px-1.5 py-0.2 rounded text-[9px] font-mono border font-bold ${currentRoleClass}`}>
+                  {currentUser.roleLabel || currentUser.role}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -181,10 +204,11 @@ export default function DashboardHeader({ onExitToSite, onSwitchUser }) {
           {/* Logout */}
           <button
             onClick={handleSwitchUser}
-            className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-rose-950/40 hover:bg-rose-900/60 border border-rose-800/50 text-rose-300 hover:text-rose-200 transition-colors cursor-pointer shrink-0"
-            title="Sign Out to Login Page"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-1.5 rounded-lg sm:rounded-xl bg-rose-950/40 hover:bg-rose-900/60 border border-rose-800/50 hover:border-rose-600/60 text-rose-300 hover:text-rose-200 transition-all cursor-pointer shrink-0 shadow-sm"
+            title="Sign Out / Logout to Login Page"
           >
-            <LogOut className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            <LogOut className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-rose-400" />
+            <span className="text-xs font-semibold">Logout</span>
           </button>
         </div>
       </div>

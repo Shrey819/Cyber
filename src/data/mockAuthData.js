@@ -52,6 +52,29 @@ export const COMPANIES = [
 ];
 
 export const INITIAL_USERS = [
+  // 0. Platform Owner & Root Admin (Only 1 Singleton Owner)
+  {
+    id: 'usr-owner-root',
+    name: 'Vikramaditya Singhania',
+    email: 'owner@vortex.internal',
+    password: 'owner123',
+    password_hash: 'owner123',
+    role: 'owner_manager',
+    roleLabel: 'Platform Owner & Root Admin',
+    roleCategory: 'Platform Ownership & Multi-Tenant Lead',
+    companyId: null,
+    companyName: 'Vortex Global Core (Platform)',
+    isIndividual: false,
+    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+    status: 'online',
+    lastActive: 'Just now',
+    location: 'Bangalore, India (Command Center)',
+    ipAddress: '10.0.0.1',
+    mfaEnabled: true,
+    securityClearance: 'LEVEL-0 ROOT (PLATFORM OWNER)',
+    sessionCreated: '2026-09-10 20:00:00',
+  },
+
   // 1. Super Developer (Platform Core Dev - Global access)
   {
     id: 'usr-super-dev-1',
@@ -530,6 +553,23 @@ export const DEMO_PERSONAS = [
 
 // Master Common Login Role Credentials
 export const ROLE_CREDENTIALS = [
+  {
+    roleNumber: 0,
+    roleKey: 'owner_manager',
+    roleLabel: 'Owner Manager',
+    personName: 'Vikramaditya Singhania',
+    email: 'owner@vortex.internal',
+    company: 'Vortex Global Core',
+    defaultUserId: 'owner@vortex.internal',
+    defaultPassword: 'owner123',
+    acceptedUserIds: ['owner@vortex.internal', 'owner', 'ownermgr', 'owner_manager', 'root'],
+    acceptedPasswords: ['owner123', 'owner', 'password123', 'admin123'],
+    userRefId: 'usr-owner-root',
+    description: 'Platform Owner: complete oversight of all client portfolios, purchased products, and manager/staff credentials.',
+    colorBadge: 'bg-amber-500/20 text-amber-300 border-amber-500/40',
+    badgeText: 'text-amber-400',
+    accentGrad: 'from-amber-600 to-orange-600',
+  },
   {
     roleNumber: 1,
     roleKey: 'super_developer',

@@ -33,10 +33,10 @@ export default function DashboardPage({ onExitToSite }) {
       {/* Dynamic Role-Based View Container */}
       <main className="flex-1 w-full max-w-[1720px] mx-auto px-2.5 xs:px-4 sm:px-6 md:px-10 lg:px-14 py-3 xs:py-5 sm:py-8 overflow-x-hidden">
         {currentUser.role === 'super_developer' && <SuperDevDashboard />}
-        {currentUser.role === 'admin_manager' && <AdminManagerDashboard />}
-        {currentUser.role === 'senior_manager' && <SeniorManagerDashboard />}
-        {currentUser.role === 'company_developer' && <CompanyDevDashboard />}
-        {currentUser.role === 'employee' && <EmployeeDashboard />}
+        {(currentUser.role === 'owner_manager' || currentUser.role === 'admin_manager') && <AdminManagerDashboard />}
+        {(currentUser.role === 'senior_manager' || currentUser.role === 'company_manager') && <SeniorManagerDashboard />}
+        {(currentUser.role === 'company_developer' || (currentUser.role === 'employee' && (currentUser.roleLabel?.toLowerCase().includes('tech') || currentUser.securityClearance?.toLowerCase().includes('tech')))) && <CompanyDevDashboard />}
+        {(currentUser.role === 'employee' && !(currentUser.roleLabel?.toLowerCase().includes('tech') || currentUser.securityClearance?.toLowerCase().includes('tech'))) && <EmployeeDashboard />}
       </main>
     </div>
   );

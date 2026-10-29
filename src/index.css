@@ -215,6 +215,8 @@ html.light [class*="bg-[#060911]"] {
 /* Card & Surface Containers (All Dashboard & Modal surfaces) */
 html.light [class*="bg-[#0B0F19]"],
 html.light [class*="bg-[#0b0f19]"],
+html.light [class*="bg-[#0C111D]"],
+html.light [class*="bg-[#0c111d]"],
 html.light [class*="bg-[#0D121F]"],
 html.light [class*="bg-[#0d121f]"],
 html.light [class*="bg-[#0F1420]"],
@@ -236,6 +238,47 @@ html.light [class*="bg-[#0c1220]"] {
   background-color: #ffffff !important;
   border-color: #e2e8f0 !important;
   box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05);
+}
+
+/* User Identity Pill in Header (Navbar & DashboardHeader) */
+html.light [class*="bg-[#0C111D]"],
+html.light [class*="bg-[#0c111d]"] {
+  background-color: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  box-shadow: 0 1px 4px 0 rgba(15, 23, 42, 0.08), 0 1px 2px -1px rgba(15, 23, 42, 0.06) !important;
+}
+
+html.light [class*="bg-[#0C111D]"] .text-white,
+html.light [class*="bg-[#0c111d]"] .text-white,
+html.light [class*="bg-[#0C111D]"] [class*="text-white"],
+html.light [class*="bg-[#0c111d]"] [class*="text-white"] {
+  color: #0f172a !important;
+}
+
+html.light [class*="bg-[#0C111D]"] .text-slate-400,
+html.light [class*="bg-[#0c111d]"] .text-slate-400,
+html.light [class*="bg-[#0C111D]"] [class*="text-slate-400"],
+html.light [class*="bg-[#0c111d]"] [class*="text-slate-400"] {
+  color: #64748b !important;
+}
+
+html.light [class*="bg-[#0C111D]"] .text-cyan-400,
+html.light [class*="bg-[#0C111D]"] .text-cyan-300,
+html.light [class*="bg-[#0c111d]"] .text-cyan-400,
+html.light [class*="bg-[#0c111d]"] .text-cyan-300 {
+  color: #0284c7 !important;
+}
+
+html.light [class*="bg-[#0C111D]"] .text-slate-700,
+html.light [class*="bg-[#0C111D]"] .text-slate-600,
+html.light [class*="bg-[#0c111d]"] .text-slate-700,
+html.light [class*="bg-[#0c111d]"] .text-slate-600 {
+  color: #cbd5e1 !important;
+}
+
+html.light [class*="bg-[#0C111D]"] svg,
+html.light [class*="bg-[#0c111d]"] svg {
+  color: #0284c7 !important;
 }
 
 /* Header & Navbar Light Blur */
@@ -270,7 +313,9 @@ html.light .border-slate-800,
 html.light [class*="border-slate-800"],
 html.light .border-slate-700,
 html.light [class*="border-slate-700"],
-html.light [class*="border-slate-900"] {
+html.light [class*="border-slate-900"],
+html.light [class*="border-cyan-950"],
+html.light [class*="border-cyan-900"] {
   border-color: #e2e8f0 !important;
 }
 
