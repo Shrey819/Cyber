@@ -140,6 +140,8 @@ export default function SeniorManagerDashboard() {
     const rawItems = Array.isArray(o.items) ? o.items : [];
     return rawItems.map(item => ({
       ...item,
+      id: item.id || item.productId,
+      productId: item.productId || item.id,
       orderId: o.id,
       orderStatus: o.orderStatus || o.order_status || 'Completed',
       paymentStatus: o.paymentStatus || o.payment_status || 'Paid',
@@ -222,11 +224,12 @@ export default function SeniorManagerDashboard() {
     const fromProducts = (products || []).find(p => p.id === cleanId);
     if (fromProducts) return fromProducts;
     const fallbackMap = {
-      'prod-red-team': { id: 'prod-red-team', name: 'Full-Scope Red Team Adversary Simulation', price: 285000 },
-      'prod-cloud-guard': { id: 'prod-cloud-guard', name: 'Cloud Armor & Kubernetes DevSecOps', price: 64999 },
-      'prod-web-scan': { id: 'prod-web-scan', name: 'Vortex Web Application & API Shield', price: 39999 },
-      'prod-compliance-hub': { id: 'prod-compliance-hub', name: 'Automated ISO 27001 & DPDP Audit Readiness', price: 52999 },
-      'prod-247-soc': { id: 'prod-247-soc', name: '24/7 Managed SOC & MDR Response Unit', price: 159999 }
+      'prod-red-team': { id: 'prod-red-team', name: 'Full-Scope Red Team Adversary Simulation', price: 4999 },
+      'prod-cloud-guard': { id: 'prod-cloud-guard', name: 'Cloud Armor & Kubernetes DevSecOps', price: 3499 },
+      'prod-web-scan': { id: 'prod-web-scan', name: 'Vortex Web Application & API Shield', price: 2499 },
+      'prod-compliance-hub': { id: 'prod-compliance-hub', name: 'Automated ISO 27001 & DPDP Audit Readiness', price: 1999 },
+      'prod-247-soc': { id: 'prod-247-soc', name: '24/7 Managed SOC & MDR Response Unit', price: 4499 },
+      'prod-phish-trainer': { id: 'prod-phish-trainer', name: 'Enterprise Phishing Defense & Employee Academy', price: 1299 }
     };
     return fallbackMap[cleanId] || { id: cleanId, name: cleanId, price: 0 };
   };

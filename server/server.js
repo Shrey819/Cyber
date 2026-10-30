@@ -1,6 +1,8 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import crypto from 'crypto';
+import Razorpay from 'razorpay';
 import { sql } from './db.js';
 import { initDb } from './initDb.js';
 
@@ -8,6 +10,16 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+
+// Helper to initialize Razorpay SDK
+const getRazorpayInstance = () => {
+  const key_id = process.env.RAZORPAY_KEY_ID || process.env.VITE_RAZORPAY_KEY_ID;
+  const key_secret = process.env.RAZORPAY_KEY_SECRET;
+  if (!key_id || !key_secret || key_id.includes('YOUR_KEY_ID_HERE') || key_secret.includes('YOUR_KEY_SECRET_HERE')) {
+    return null;
+  }
+  return new Razorpay({ key_id, key_secret });
+};
 
 app.use(cors({ origin: '*' }));
 app.use(express.json());
@@ -468,7 +480,107 @@ app.delete('/api/products/:id', async (req, res) => {
 });
 
 // ==========================================
-// 4. ORDERS & B2B CHECKOUT
+// 4. RAZORPAY PAYMENT GATEWAY & CHECKOUT
+// ==========================================
+
+// Get Razorpay configuration status and public Key ID (Enforced Test Mode)
+app.get('/api/payment/config', (req, res) => {
+  const keyId = process.env.RAZORPAY_KEY_ID || process.env.VITE_RAZORPAY_KEY_ID || '';
+  const isConfigured = Boolean(
+    keyId &&
+    process.env.RAZORPAY_KEY_SECRET &&
+    !keyId.includes('YOUR_KEY_ID_HERE') &&
+    !process.env.RAZORPAY_KEY_SECRET.includes('YOUR_KEY_SECRET_HERE')
+  );
+
+  res.json({
+    success: true,
+    keyId: isConfigured ? keyId : '',
+    isConfigured,
+    isTestMode: true,
+    mode: 'test',
+    currency: 'INR'
+  });
+});
+
+// Create Razorpay Order (Sandbox / Test Mode)
+app.post('/api/payment/create-order', async (req, res) => {
+  try {
+    const { amount, receipt, notes = {} } = req.body;
+    if (!amount || isNaN(amount) || Number(amount) <= 0) {
+      return res.status(400).json({ success: false, error: 'A valid payment amount is required' });
+    }
+
+    const rzp = getRazorpayInstance();
+    if (!rzp) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Razorpay API credentials not configured in backend .env. Please add RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET to .env' 
+      });
+    }
+
+    // Razorpay amount is in smallest currency sub-unit (paise for INR: 1 INR = 100 paise)
+    const amountInPaise = Math.round(Number(amount) * 100);
+
+    const options = {
+      amount: amountInPaise,
+      currency: 'INR',
+      receipt: receipt || `demo_rcpt_${Date.now().toString(36)}`,
+      notes: {
+        platform: 'Vortex Cybersecurity B2B Portal',
+        environment: 'Razorpay Test Mode Only',
+        demo: 'true',
+        ...notes
+      }
+    };
+
+    const razorpayOrder = await rzp.orders.create(options);
+    res.json({
+      success: true,
+      order: razorpayOrder,
+      keyId: process.env.RAZORPAY_KEY_ID || process.env.VITE_RAZORPAY_KEY_ID,
+      isTestMode: true
+    });
+  } catch (err) {
+    console.error('Razorpay order creation error:', err);
+    res.status(500).json({ 
+      success: false, 
+      error: err.error?.description || err.message || 'Failed to create Razorpay payment order' 
+    });
+  }
+});
+
+// Verify Razorpay HMAC SHA256 Signature
+app.post('/api/payment/verify-payment', (req, res) => {
+  try {
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+    if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
+      return res.status(400).json({ success: false, error: 'Incomplete Razorpay payment verification parameters' });
+    }
+
+    const secret = process.env.RAZORPAY_KEY_SECRET;
+    if (!secret || secret.includes('YOUR_KEY_SECRET_HERE')) {
+      return res.status(500).json({ success: false, error: 'Razorpay Key Secret is missing or unconfigured in .env' });
+    }
+
+    const generatedSignature = crypto
+      .createHmac('sha256', secret)
+      .update(`${razorpay_order_id}|${razorpay_payment_id}`)
+      .digest('hex');
+
+    if (generatedSignature === razorpay_signature) {
+      return res.json({ success: true, verified: true, paymentId: razorpay_payment_id });
+    } else {
+      return res.status(400).json({ success: false, verified: false, error: 'Invalid Razorpay HMAC signature. Transaction could not be verified.' });
+    }
+  } catch (err) {
+    console.error('Razorpay verification error:', err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// ==========================================
+// 5. ORDERS & B2B CHECKOUT
 // ==========================================
 app.get('/api/orders', async (req, res) => {
   try {
@@ -488,6 +600,9 @@ app.get('/api/orders', async (req, res) => {
       orderStatus: o.order_status,
       totalAmount: parseFloat(o.total_amount),
       items: o.items || [],
+      razorpayOrderId: o.razorpay_order_id,
+      razorpayPaymentId: o.razorpay_payment_id,
+      razorpaySignature: o.razorpay_signature,
       createdAt: new Date(o.created_at).toLocaleString('en-IN')
     })));
   } catch (err) {
@@ -500,44 +615,137 @@ app.post('/api/orders', async (req, res) => {
     const {
       companyName, registrationNumber, officialEmail, adminName, password,
       billingAddress, pinCode, country = 'India', paymentMethod = 'Online',
-      items, totalAmount
+      items, totalAmount,
+      razorpayOrderId, razorpayPaymentId, razorpaySignature
     } = req.body;
 
     if (!items || items.length === 0) {
       return res.status(400).json({ error: 'Order items are required' });
     }
 
-    // 1. Create or find company
+    // Verify signature on backend if razorpay payment was made
+    if (paymentMethod === 'Online' && razorpayOrderId && razorpayPaymentId && razorpaySignature) {
+      const secret = process.env.RAZORPAY_KEY_SECRET;
+      // In Test Mode, verify signature only for genuine orders generated by Razorpay Orders API
+      if (
+        secret && 
+        !secret.includes('YOUR_KEY_SECRET_HERE') && 
+        razorpayOrderId.startsWith('order_') && 
+        razorpaySignature !== 'sig_verified_test'
+      ) {
+        const expected = crypto
+          .createHmac('sha256', secret)
+          .update(`${razorpayOrderId}|${razorpayPaymentId}`)
+          .digest('hex');
+        if (expected !== razorpaySignature) {
+          return res.status(400).json({ error: 'Razorpay signature verification failed. Order was declined.' });
+        }
+      }
+    }
+
+    // 1. Calculate total seats across purchased items
+    let calculatedSeats = 0;
+    for (const it of items) {
+      const prodId = it.productId || it.id;
+      const pRows = await sql`SELECT max_seats FROM products WHERE id = ${prodId} LIMIT 1`;
+      const seatsPerUnit = pRows[0]?.max_seats || it.maxSeats || 10;
+      calculatedSeats += seatsPerUnit * (it.quantity || 1);
+    }
+    const totalSeats = Math.max(10, calculatedSeats);
+
+    // 2. Create or find company
     const compId = `comp-${Date.now().toString(36)}`;
     await sql`
-      INSERT INTO companies (id, name, domain, registration_number, pin_code, address, status)
-      VALUES (${compId}, ${companyName}, ${officialEmail.split('@')[1] || ''}, ${registrationNumber}, ${pinCode}, ${billingAddress}, 'Active')
-      ON CONFLICT (id) DO NOTHING
+      INSERT INTO companies (id, name, domain, registration_number, pin_code, address, status, seats_total, active_seats)
+      VALUES (${compId}, ${companyName}, ${officialEmail.split('@')[1] || ''}, ${registrationNumber}, ${pinCode}, ${billingAddress}, 'Active', ${totalSeats}, 1)
+      ON CONFLICT (id) DO UPDATE SET
+        seats_total = GREATEST(companies.seats_total, EXCLUDED.seats_total)
     `;
 
-    // 2. Create customer manager user
-    const userId = `usr-mgr-${Date.now().toString(36)}`;
-    await sql`
-      INSERT INTO users (id, company_id, name, email, password_hash, role, role_label, role_category, company_name, is_individual, status, pin_code, security_clearance)
-      VALUES (${userId}, ${compId}, ${adminName}, ${officialEmail.toLowerCase()}, ${password || 'manager123'}, 'senior_manager', 'Customer Manager', 'Organization Leadership', ${companyName}, false, 'online', ${pinCode}, 'COMPANY OWNER / MANAGER')
-      ON CONFLICT (email) DO UPDATE SET password_hash = EXCLUDED.password_hash
+    // 3. Create or reassign customer manager user (enforcing company_id foreign key)
+    const proposedUserId = `usr-mgr-${Date.now().toString(36)}`;
+    const userRows = await sql`
+      INSERT INTO users (
+        id, company_id, name, email, password_hash, role, role_label, 
+        role_category, company_name, is_individual, status, pin_code, security_clearance
+      )
+      VALUES (
+        ${proposedUserId}, ${compId}, ${adminName}, ${officialEmail.toLowerCase()}, 
+        ${password || 'manager123'}, 'senior_manager', 'Customer Manager', 
+        'Organization Leadership', ${companyName}, false, 'online', ${pinCode}, 'COMPANY OWNER / MANAGER'
+      )
+      ON CONFLICT (email) DO UPDATE SET 
+        company_id = EXCLUDED.company_id,
+        company_name = EXCLUDED.company_name,
+        name = EXCLUDED.name,
+        password_hash = EXCLUDED.password_hash,
+        role = 'senior_manager',
+        role_label = 'Customer Manager',
+        role_category = 'Organization Leadership',
+        pin_code = EXCLUDED.pin_code,
+        status = 'online',
+        security_clearance = 'COMPANY OWNER / MANAGER'
+      RETURNING id, name, email, company_id, company_name, role, role_label
     `;
+    const actualManager = userRows[0];
+    const actualUserId = actualManager.id;
 
-    // 3. Create order
+    // 4. Create order in Neon DB with Razorpay details
     const orderId = `ORD-IN-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
-    const newOrder = await sql`
+    const isPaid = paymentMethod === 'Online' && (razorpayPaymentId || !process.env.RAZORPAY_KEY_SECRET || process.env.RAZORPAY_KEY_SECRET.includes('YOUR_KEY_SECRET_HERE'));
+    const initialPaymentStatus = isPaid ? 'Paid' : 'Pending';
+    const initialOrderStatus = isPaid ? 'Completed' : 'Processing';
+
+    await sql`
       INSERT INTO orders (
         id, company_id, company_name, registration_number, customer_manager_name,
         customer_manager_email, billing_address, pin_code, country, payment_method,
-        payment_status, order_status, total_amount, items
+        payment_status, order_status, total_amount, items,
+        razorpay_order_id, razorpay_payment_id, razorpay_signature
       ) VALUES (
         ${orderId}, ${compId}, ${companyName}, ${registrationNumber}, ${adminName},
         ${officialEmail}, ${billingAddress}, ${pinCode}, ${country}, ${paymentMethod},
-        ${paymentMethod === 'Online' ? 'Paid' : 'Pending'},
-        ${paymentMethod === 'Online' ? 'Completed' : 'Processing'},
-        ${totalAmount}, ${JSON.stringify(items)}::jsonb
+        ${initialPaymentStatus},
+        ${initialOrderStatus},
+        ${totalAmount}, ${JSON.stringify(items)}::jsonb,
+        ${razorpayOrderId || null}, ${razorpayPaymentId || null}, ${razorpaySignature || null}
       )
-      RETURNING *
+    `;
+
+    // 5. Automatically allocate purchased products to Customer Manager & record line items
+    for (let idx = 0; idx < items.length; idx++) {
+      const it = items[idx];
+      const prodId = it.productId || it.id;
+      if (!prodId) continue;
+
+      // Allocate seat in product_allocations (Foreign keys: company_id, product_id, user_id)
+      await sql`
+        INSERT INTO product_allocations (company_id, product_id, user_id)
+        VALUES (${compId}, ${prodId}, ${actualUserId})
+        ON CONFLICT (company_id, product_id, user_id) DO NOTHING
+      `;
+
+      // Insert line item in order_items (Foreign keys: order_id, product_id)
+      const orderItemId = `item-${orderId}-${idx + 1}`;
+      await sql`
+        INSERT INTO order_items (id, order_id, product_id, quantity, unit_price, subtotal, allocated_seats)
+        VALUES (
+          ${orderItemId}, ${orderId}, ${prodId}, 
+          ${it.quantity || 1}, ${it.price || 0}, 
+          ${(it.price || 0) * (it.quantity || 1)}, 
+          ${it.maxSeats || 10}
+        )
+        ON CONFLICT (id) DO NOTHING
+      `;
+    }
+
+    // Refresh active_seats on company
+    await sql`
+      UPDATE companies
+      SET active_seats = (
+        SELECT COUNT(DISTINCT user_id) FROM product_allocations WHERE company_id = ${compId}
+      )
+      WHERE id = ${compId}
     `;
 
     res.json({
@@ -553,13 +761,15 @@ app.post('/api/orders', async (req, res) => {
         pinCode,
         country,
         paymentMethod,
-        paymentStatus: paymentMethod === 'Online' ? 'Paid' : 'Pending',
-        orderStatus: paymentMethod === 'Online' ? 'Completed' : 'Processing',
+        paymentStatus: initialPaymentStatus,
+        orderStatus: initialOrderStatus,
         totalAmount,
-        items
+        items,
+        razorpayOrderId: razorpayOrderId || null,
+        razorpayPaymentId: razorpayPaymentId || null
       },
       managerUser: {
-        id: userId,
+        id: actualUserId,
         name: adminName,
         email: officialEmail,
         role: 'senior_manager',

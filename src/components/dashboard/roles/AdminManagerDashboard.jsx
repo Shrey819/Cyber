@@ -431,6 +431,11 @@ export default function AdminManagerDashboard() {
                       <td className="py-3 px-4 font-mono font-bold text-white">{formatINR(ord.totalAmount)}</td>
                       <td className="py-3 px-4">
                         <span className="text-slate-200">{ord.paymentMethod}</span>
+                        {ord.razorpayPaymentId && (
+                          <span className="block text-[9px] font-mono text-cyan-400 truncate max-w-[130px]" title={ord.razorpayPaymentId}>
+                            ⚡ {ord.razorpayPaymentId}
+                          </span>
+                        )}
                         <span className={`block text-[10px] font-bold ${ord.paymentStatus === 'Paid' ? 'text-emerald-400' : 'text-amber-400'}`}>
                           {ord.paymentStatus}
                         </span>
@@ -974,15 +979,19 @@ export default function AdminManagerDashboard() {
                                       {/* Line Items Grid */}
                                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
                                         {itemsList.map((item, idx) => {
+                                          const prodId = item.productId || item.id;
+                                          const catalogProd = (products || []).find(p => p.id === prodId);
+                                          const maxSeats = item.maxSeats || catalogProd?.maxSeats || 10;
+
                                           // Find allocations for this product in this company
                                           const itemAllocations = allocationsList.filter(a => 
                                             (a.companyId === comp.id || a.company_id === comp.id) &&
-                                            (a.productId === item.id || a.product_id === item.id)
+                                            (a.productId === prodId || a.product_id === prodId)
                                           );
 
                                           return (
                                             <div 
-                                              key={item.id || idx} 
+                                              key={prodId || idx} 
                                               className="bg-[#0B0F19] border border-slate-800 rounded-xl p-3.5 flex flex-col justify-between hover:border-slate-700 transition-colors"
                                             >
                                               <div>
@@ -1001,7 +1010,7 @@ export default function AdminManagerDashboard() {
                                                     {item.billingCycle || 'Monthly'}
                                                   </span>
                                                   <span className="px-1.5 py-0.5 rounded bg-purple-950/60 text-purple-300 border border-purple-800/40 font-mono">
-                                                    {item.maxSeats || 10} Seats Included
+                                                    {maxSeats} Seats Included
                                                   </span>
                                                 </div>
                                               </div>
@@ -1009,7 +1018,7 @@ export default function AdminManagerDashboard() {
                                               {/* Allocated Seats Breakdown */}
                                               <div className="pt-2 border-t border-slate-800/60 mt-2">
                                                 <span className="text-[10px] text-slate-400 block mb-1 font-mono">
-                                                  Assigned Staff Seats ({itemAllocations.length} / {item.maxSeats || 10}):
+                                                  Assigned Staff Seats ({itemAllocations.length} / {maxSeats}):
                                                 </span>
                                                 {itemAllocations.length === 0 ? (
                                                   <span className="text-[10px] text-slate-500 italic">No seats assigned to employees yet</span>
@@ -1705,10 +1714,22 @@ export default function AdminManagerDashboard() {
                 <span className="text-slate-400">Postal PIN Code:</span>
                 <span className="font-mono text-amber-400 font-bold">{selectedOrderDetails.pinCode}</span>
               </div>
-              <div className="flex justify-between">
+              <div className="flex justify-between border-b border-slate-800 pb-1.5">
                 <span className="text-slate-400">Payment:</span>
                 <span className="font-bold text-cyan-400">{selectedOrderDetails.paymentMethod} ({selectedOrderDetails.paymentStatus})</span>
               </div>
+              {selectedOrderDetails.razorpayPaymentId && (
+                <div className="flex justify-between border-b border-slate-800 pb-1.5">
+                  <span className="text-slate-400">Razorpay Payment ID:</span>
+                  <span className="font-mono text-cyan-400 font-bold">{selectedOrderDetails.razorpayPaymentId}</span>
+                </div>
+              )}
+              {selectedOrderDetails.razorpayOrderId && (
+                <div className="flex justify-between">
+                  <span className="text-slate-400">Razorpay Order ID:</span>
+                  <span className="font-mono text-slate-300">{selectedOrderDetails.razorpayOrderId}</span>
+                </div>
+              )}
             </div>
 
             <div className="mt-4">

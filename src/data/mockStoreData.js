@@ -65,7 +65,7 @@ export const INITIAL_PRODUCTS = [
     name: 'Vortex Web Application & API Shield',
     tagline: 'Automated DAST & continuous API vulnerability scanner',
     description: 'Deep automated scanning for OWASP Top 10 vulnerabilities, broken object authorization, secret leaks, and SQLi on web apps and REST/GraphQL APIs.',
-    price: 39999,
+    price: 2499,
     billingCycle: 'Monthly',
     badge: 'Popular',
     maxSeats: 10,
@@ -87,7 +87,7 @@ export const INITIAL_PRODUCTS = [
     name: 'Full-Scope Red Team Adversary Simulation',
     tagline: 'Simulated cyberattack by certified Indian ethical hackers',
     description: 'Comprehensive physical, digital, and social engineering red team assessment replicating nation-state threat tactics with executive remediation debrief.',
-    price: 285000,
+    price: 4999,
     billingCycle: 'One-Time Project',
     badge: 'Enterprise',
     maxSeats: 25,
@@ -109,7 +109,7 @@ export const INITIAL_PRODUCTS = [
     name: 'Cloud Armor & Kubernetes DevSecOps',
     tagline: 'Real-time multi-cloud IAM, posture, and container defense',
     description: 'Connect AWS, GCP, and Azure accounts to continuously detect misconfigurations, open S3 buckets, exposed secrets, and unpatched Kubernetes pods.',
-    price: 64999,
+    price: 3499,
     billingCycle: 'Monthly',
     badge: 'High Value',
     maxSeats: 15,
@@ -131,7 +131,7 @@ export const INITIAL_PRODUCTS = [
     name: '24/7 Managed SOC & MDR Response Unit',
     tagline: 'Elite analysts backed by autonomous sub-50ms containment',
     description: 'Enterprise 24/7 Security Operations Center monitoring all endpoints, cloud logs, and identity providers with guaranteed 15-minute SLA on active threats.',
-    price: 159999,
+    price: 4499,
     billingCycle: 'Monthly',
     badge: 'Critical Defense',
     maxSeats: 50,
@@ -153,7 +153,7 @@ export const INITIAL_PRODUCTS = [
     name: 'Automated ISO 27001 & DPDP Audit Readiness',
     tagline: 'Continuous evidence gathering and audit checklist engine',
     description: 'Turn months of manual spreadsheet audit prep into automated evidence collection. Generates auditor-ready packets for ISO 27001, SOC 2, and India DPDP Act 2023.',
-    price: 52999,
+    price: 1999,
     billingCycle: 'Monthly',
     badge: 'Audit Ready',
     maxSeats: 15,
@@ -175,7 +175,7 @@ export const INITIAL_PRODUCTS = [
     name: 'Enterprise Phishing Defense & Employee Academy',
     tagline: 'Simulated spear-phishing with automated micro-trainings',
     description: 'Train your workforce to detect modern AI spear-phishing, UPI/QR code scams, and invoice fraud with tailored weekly simulations.',
-    price: 24999,
+    price: 1299,
     billingCycle: 'Monthly',
     badge: 'Employee Security',
     maxSeats: 100,
@@ -207,12 +207,12 @@ export const INITIAL_ORDERS = [
     paymentStatus: 'Paid',
     orderStatus: 'Completed',
     createdAt: '2026-10-24 14:32:00',
-    totalAmount: 39999,
+    totalAmount: 2499,
     items: [
       {
         productId: 'prod-web-scan',
         name: 'Vortex Web Application & API Shield',
-        price: 39999,
+        price: 2499,
         quantity: 1,
         billingCycle: 'Monthly'
       }
@@ -232,12 +232,12 @@ export const INITIAL_ORDERS = [
     paymentStatus: 'Paid',
     orderStatus: 'Completed',
     createdAt: '2026-10-22 09:15:00',
-    totalAmount: 159999,
+    totalAmount: 4499,
     items: [
       {
         productId: 'prod-247-soc',
         name: '24/7 Managed SOC & MDR Response Unit',
-        price: 159999,
+        price: 4499,
         quantity: 1,
         billingCycle: 'Monthly'
       }
@@ -257,12 +257,12 @@ export const INITIAL_ORDERS = [
     paymentStatus: 'Pending',
     orderStatus: 'Processing',
     createdAt: '2026-10-27 16:45:00',
-    totalAmount: 64999,
+    totalAmount: 3499,
     items: [
       {
         productId: 'prod-cloud-guard',
         name: 'Cloud Armor & Kubernetes DevSecOps',
-        price: 64999,
+        price: 3499,
         quantity: 1,
         billingCycle: 'Monthly'
       }

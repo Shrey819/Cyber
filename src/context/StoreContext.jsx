@@ -60,6 +60,30 @@ export function StoreProvider({ children }) {
     fetchNeonData();
   }, []);
 
+  // Synchronize cart item prices if catalog product prices change (e.g. demo mode rates)
+  useEffect(() => {
+    if (products.length > 0 && cart.length > 0) {
+      setCart((prevCart) => {
+        let changed = false;
+        const updated = prevCart.map((item) => {
+          const liveProd = products.find((p) => p.id === item.product.id);
+          if (liveProd && Number(liveProd.price) !== Number(item.product.price)) {
+            changed = true;
+            return {
+              ...item,
+              product: {
+                ...item.product,
+                price: Number(liveProd.price)
+              }
+            };
+          }
+          return item;
+        });
+        return changed ? updated : prevCart;
+      });
+    }
+  }, [products]);
+
   useEffect(() => {
     localStorage.setItem('vortex_cart_inr', JSON.stringify(cart));
   }, [cart]);
@@ -204,24 +228,38 @@ export function StoreProvider({ children }) {
       totalAmount
     };
 
-    try {
-      const res = await fetch(`${API_URL}/orders`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
+    let lastErr = null;
+    const endpoints = [`${API_URL}/orders`, '/api/orders'];
 
-      const data = await res.json();
-      if (res.ok && data.success) {
-        clearCart();
-        fetchNeonData();
-        if (refetchNeon) refetchNeon();
-        return { order: data.order, managerUser: data.managerUser };
+    for (const endpoint of endpoints) {
+      try {
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+        if (res.ok && data.success) {
+          clearCart();
+          fetchNeonData();
+          if (refetchNeon) refetchNeon();
+          return { order: data.order, managerUser: data.managerUser };
+        }
+        throw new Error(data.error || 'Failed to create order in database');
+      } catch (e) {
+        lastErr = e;
+        if (e.message && e.message !== 'Failed to fetch') {
+          throw e; // API responded with error message
+        }
       }
-      throw new Error(data.error || 'Failed to create order in Neon');
-    } catch (e) {
-      throw e;
     }
+
+    throw new Error(
+      lastErr?.message === 'Failed to fetch' 
+        ? 'Cannot connect to backend server on port 5000. Please start the backend server with `npm run dev`.'
+        : (lastErr?.message || 'Failed to process order.')
+    );
   };
 
   const updateOrderStatus = async (orderId, updates) => {
