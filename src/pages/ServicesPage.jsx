@@ -18,7 +18,7 @@ import {
 import { useStore } from '../context/StoreContext';
 import { formatINR } from '../data/mockStoreData';
 
-export default function ServicesPage({ setCurrentPage }) {
+export default function ServicesPage({ setCurrentPage, onSelectProduct }) {
   const { categories, products, addToCart, cart } = useStore();
   const [selectedCategoryId, setSelectedCategoryId] = useState('ALL');
   const [searchQuery, setSearchQuery] = useState('');
@@ -185,6 +185,15 @@ export default function ServicesPage({ setCurrentPage }) {
 
               {/* Action Buttons */}
               <div className="mt-6 pt-4 border-t border-slate-800/80 flex items-center gap-2">
+                {onSelectProduct && (
+                  <button
+                    onClick={() => onSelectProduct(prod)}
+                    className="px-3 py-2.5 bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white text-xs font-semibold rounded-xl border border-slate-800 transition-colors cursor-pointer"
+                  >
+                    Specs
+                  </button>
+                )}
+
                 <button
                   onClick={() => handleAddToCart(prod)}
                   className={`flex-1 py-2.5 px-4 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all ${

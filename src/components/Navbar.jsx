@@ -14,13 +14,22 @@ import {
   LayoutDashboard,
   User,
   Sparkles,
-  ShoppingBag
+  ShoppingBag,
+  Search
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useStore } from '../context/StoreContext';
 import ThemeToggle from './ThemeToggle';
+import SearchBar from './SearchBar';
 
-export default function Navbar({ currentPage, setCurrentPage, openLoginModal, openEmergencyModal }) {
+export default function Navbar({ 
+  currentPage, 
+  setCurrentPage, 
+  openLoginModal, 
+  openEmergencyModal,
+  onSelectProduct,
+  onSearch 
+}) {
   const { currentUser } = useAuth();
   const { cart } = useStore();
   const [isScrolled, setIsScrolled] = useState(false);

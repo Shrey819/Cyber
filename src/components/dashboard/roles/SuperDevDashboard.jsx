@@ -249,7 +249,7 @@ export default function SuperDevDashboard() {
               { name: 'API Gateway (Envoy / mTLS)', status: 'Optimal', latency: '2.4ms', nodes: '12 pods', ok: true },
               { name: 'Auth & SSO Identity Engine', status: 'Optimal', latency: '4.8ms', nodes: '8 pods', ok: true },
               { name: 'Redis Cache Cluster Shards', status: 'Optimal', hit: '98.6%', nodes: '16 nodes', ok: true },
-              { name: 'PostgreSQL Primary + Replicas', status: 'Healthy', pool: '142/500 conns', nodes: '4 instances', ok: true },
+              { name: 'MongoDB Cluster Replica Sets', status: 'Healthy', pool: '25/50 conns', nodes: '3 instances', ok: true },
               { name: 'Autonomous Threat Hunter', status: 'Active', rate: '4,812 pkt/s', nodes: '6 workers', ok: true },
               { name: 'Quantum Key Distribution (QKD)', status: 'Standby', cipher: 'Kyber-768', nodes: '2 HSMs', ok: true },
             ].map((svc, idx) => (

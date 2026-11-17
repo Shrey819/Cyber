@@ -240,6 +240,43 @@ html.light [class*="bg-[#0c1220]"] {
   box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05);
 }
 
+/* Order Success & Dashboard Sub-cards in Light Mode */
+html.light [class*="bg-[#0e1422]"],
+html.light [class*="bg-[#0E1422]"] {
+  background-color: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.06) !important;
+}
+
+html.light [class*="bg-[#0e1422]"] .text-slate-100,
+html.light [class*="bg-[#0e1422]"] [class*="text-slate-100"],
+html.light [class*="bg-[#0e1422]"] .text-white,
+html.light [class*="bg-[#0e1422]"] [class*="text-white"],
+html.light [class*="bg-[#0e1422]"] span {
+  color: #0f172a;
+}
+
+html.light [class*="bg-[#0e1422]"] .text-slate-400,
+html.light [class*="bg-[#0e1422]"] [class*="text-slate-400"] {
+  color: #64748b !important;
+}
+
+html.light [class*="bg-[#0e1422]"] .text-cyan-300,
+html.light [class*="bg-[#0e1422]"] .text-cyan-400,
+html.light [class*="bg-[#0e1422]"] [class*="text-cyan"] {
+  color: #0284c7 !important;
+}
+
+html.light [class*="bg-[#0e1422]"] .text-amber-400,
+html.light [class*="bg-[#0e1422]"] [class*="text-amber"] {
+  color: #d97706 !important;
+}
+
+html.light [class*="bg-[#0e1422]"] .text-emerald-400,
+html.light [class*="bg-[#0e1422]"] [class*="text-emerald"] {
+  color: #059669 !important;
+}
+
 /* User Identity Pill in Header (Navbar & DashboardHeader) */
 html.light [class*="bg-[#0C111D]"],
 html.light [class*="bg-[#0c111d]"] {

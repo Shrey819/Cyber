@@ -124,7 +124,7 @@ export default function LoginPage({ onLoginSuccess, onExitToSite }) {
       setLoading(false);
 
       if (res && res.success) {
-        setSuccessMessage('Account created successfully in Neon database! Logging you in...');
+        setSuccessMessage('Account created successfully in MongoDB database! Logging you in...');
         setTimeout(() => {
           if (onLoginSuccess) onLoginSuccess(res.user);
         }, 600);

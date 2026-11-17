@@ -120,8 +120,8 @@ export function AuthProvider({ children }) {
   });
 
   const [systemLogs, setSystemLogs] = useState([
-    { id: 1, time: '19:54:12', level: 'INFO', module: 'NEON-PG', msg: 'Connected to Neon PostgreSQL over TLS 1.3 / Port 443' },
-    { id: 2, time: '19:54:02', level: 'INFO', module: 'AUTH-GATEWAY', msg: 'Zero-Trust authorization policies synchronized with neondb' },
+    { id: 1, time: '19:54:12', level: 'INFO', module: 'MONGODB', msg: 'Connected to MongoDB Replica Set with connection pool' },
+    { id: 2, time: '19:54:02', level: 'INFO', module: 'AUTH-GATEWAY', msg: 'Zero-Trust authorization policies synchronized with MongoDB' },
   ]);
 
   const toggleMaintenanceMode = () => {
@@ -211,9 +211,9 @@ export function AuthProvider({ children }) {
         fetchNeonUsers();
         return { success: true, user: data.user };
       }
-      return { success: false, error: data.error || 'Failed to register in Neon.' };
+      return { success: false, error: data.error || 'Failed to register in database.' };
     } catch (e) {
-      return { success: false, error: 'Neon Backend connection error: ' + e.message };
+      return { success: false, error: 'Database backend connection error: ' + e.message };
     }
   };
 
