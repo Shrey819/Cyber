@@ -41,6 +41,7 @@ export async function initDb() {
         location TEXT,
         pin_code VARCHAR(10),
         security_clearance VARCHAR(100),
+        last_login_at TIMESTAMP WITH TIME ZONE,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `;
@@ -100,7 +101,8 @@ export async function initDb() {
       );
     `;
 
-    // Ensure Razorpay migration columns exist on already created tables
+    // Ensure columns exist on already created tables
+    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS last_login_at TIMESTAMP WITH TIME ZONE`;
     await sql`ALTER TABLE orders ADD COLUMN IF NOT EXISTS razorpay_order_id VARCHAR(100)`;
     await sql`ALTER TABLE orders ADD COLUMN IF NOT EXISTS razorpay_payment_id VARCHAR(100)`;
     await sql`ALTER TABLE orders ADD COLUMN IF NOT EXISTS razorpay_signature VARCHAR(255)`;

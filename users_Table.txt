@@ -1,0 +1,16 @@
+Sarah Jenkins		sarah.admin@vortex.internal	admin123	admin_manager
+Shrey Sojitra		a@as.com			123456		senior_manager
+Kavita Patel		kavita.dev@zenithcloud.in	employee123	employee
+shrey			s@s.com				123456789	employee
+Shrey P			shrey@hello.com			ss		employee
+a2			a2@as.com			a2		employee
+Ananya Sen		ananya.sec@quantumshield.in	employee123	employee
+Rohan Sharma		rohan.sec@apextech.com		employee123	employee
+S. Shrey		try.sh@gmail.com		123456		senior_manager
+Demo Real		demo@demo.com			123456		senior_manager
+Arjun Singhal		arjun.mgr@quantumshield.in	manager123	company_manager
+Priya Nair		priya.mgr@zenithcloud.in	manager123	company_manager
+Vikramaditya Singhania	owner@vortex.internal		owner123	owner_manager
+Marcus Vance		marcus.mgr@apextech.com		manager123	company_manager
+Alex Mercer		alex.dev@vortex.internal	superdev123	super_developer
+Vikram Deshmukh		vikram.tech@quantumshield.in	tech123		employee
