@@ -14,30 +14,16 @@ import {
   Sparkles,
   ShoppingBag
 } from 'lucide-react';
+import ScanMonitor from '../components/scanner/ScanMonitor';
 
 export default function HomePage({ setCurrentPage, openLoginModal }) {
   const [domainInput, setDomainInput] = useState('');
-  const [scanResult, setScanResult] = useState(null);
-  const [isScanning, setIsScanning] = useState(false);
+  const [activeScanModalDomain, setActiveScanModalDomain] = useState(null);
 
   const handleQuickScan = (e) => {
     e.preventDefault();
     if (!domainInput.trim()) return;
-
-    setIsScanning(true);
-    setScanResult(null);
-
-    setTimeout(() => {
-      setIsScanning(false);
-      setScanResult({
-        domain: domainInput.trim(),
-        score: 84,
-        status: 'Protected',
-        tlsGrade: 'A+',
-        dnssec: 'Valid',
-        portsOpen: 3
-      });
-    }, 1200);
+    setActiveScanModalDomain(domainInput.trim());
   };
 
   return (
@@ -88,24 +74,25 @@ export default function HomePage({ setCurrentPage, openLoginModal }) {
             />
             <button
               type="submit"
-              disabled={isScanning}
-              className="px-4 py-2 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs rounded-lg whitespace-nowrap disabled:opacity-50"
+              disabled={!domainInput.trim()}
+              className="px-4 py-2 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs rounded-lg whitespace-nowrap disabled:opacity-50 cursor-pointer"
             >
-              {isScanning ? 'Testing...' : 'Inspect'}
+              Audit Now
             </button>
           </form>
 
-          {scanResult && (
-            <div className="mt-4 p-4 bg-[#0B0F19] border border-cyan-500/30 rounded-xl text-left text-xs animate-fadeIn flex items-center justify-between">
-              <div>
-                <span className="font-bold text-white block">{scanResult.domain}</span>
-                <span className="text-[11px] text-slate-400">TLS: {scanResult.tlsGrade} • DNSSEC: {scanResult.dnssec} • Ports: {scanResult.portsOpen}</span>
-              </div>
-              <div className="text-right">
-                <span className="text-emerald-400 font-bold block">Score: {scanResult.score}/100</span>
-                <button onClick={() => setCurrentPage('services')} className="text-cyan-400 hover:underline text-[11px]">
-                  Order Full VAPT Audit →
-                </button>
+          {activeScanModalDomain && (
+            <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+              <div className="max-w-xl w-full animate-fadeIn text-left">
+                <ScanMonitor
+                  initialUrl={activeScanModalDomain}
+                  initialMode="quick"
+                  onClose={() => setActiveScanModalDomain(null)}
+                  onViewReport={(scanId) => {
+                    window.location.hash = `#scan/${scanId}`;
+                    setActiveScanModalDomain(null);
+                  }}
+                />
               </div>
             </div>
           )}

@@ -5,3 +5,7 @@ export { Product } from './Product.js';
 export { Order } from './Order.js';
 export { OrderItem } from './OrderItem.js';
 export { ProductAllocation } from './ProductAllocation.js';
+export { Domain } from './Domain.js';
+export { Scan } from './Scan.js';
+export { ScannedPage } from './ScannedPage.js';
+export { Finding } from './Finding.js';

@@ -13,8 +13,11 @@ import {
   Product,
   Order,
   OrderItem,
-  ProductAllocation
+  ProductAllocation,
+  Domain
 } from './models/index.js';
+import domainRoutes from './routes/domainRoutes.js';
+import scanRoutes from './routes/scanRoutes.js';
 
 dotenv.config();
 
@@ -33,6 +36,12 @@ const getRazorpayInstance = () => {
 
 app.use(cors({ origin: '*' }));
 app.use(express.json());
+
+// Domain Management Routes (Phase 1)
+app.use('/api/domains', domainRoutes);
+
+// Website Audit Scan Routes (Phase 2)
+app.use('/api/scans', scanRoutes);
 
 // Health Check
 app.get('/api/health', async (req, res) => {

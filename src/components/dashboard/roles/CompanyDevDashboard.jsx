@@ -22,6 +22,7 @@ import {
   Check
 } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
+import DomainManager from '../../scanner/DomainManager';
 
 export default function CompanyDevDashboard() {
   const { 
@@ -160,6 +161,18 @@ export default function CompanyDevDashboard() {
           {/* Sub-Navigation Tabs (Horizontal swipe track on mobile) */}
           <div className="flex items-center gap-1.5 p-1 bg-slate-900/90 rounded-xl border border-slate-800 overflow-x-auto scrollbar-none max-w-full">
             <button
+              onClick={() => setActiveTab('domains')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shrink-0 ${
+                activeTab === 'domains'
+                  ? 'bg-cyan-500 text-slate-950 font-bold shadow-sm'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <Globe className="w-3.5 h-3.5" />
+              <span>Target Domains</span>
+            </button>
+
+            <button
               onClick={() => setActiveTab('keys')}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shrink-0 ${
                 activeTab === 'keys'
@@ -209,6 +222,11 @@ export default function CompanyDevDashboard() {
           </div>
         </div>
       </div>
+
+      {/* TAB 0: TARGET DOMAINS INVENTORY (PHASE 1) */}
+      {activeTab === 'domains' && (
+        <DomainManager />
+      )}
 
       {/* TAB 1: API KEYS & WEBHOOK CREDENTIALS */}
       {activeTab === 'keys' && (

@@ -15,6 +15,7 @@ import LoginPage from './pages/LoginPage';
 import CheckoutPage from './pages/CheckoutPage';
 import SearchResultsPage from './pages/SearchResultsPage';
 import OrderSuccessPage from './pages/OrderSuccessPage';
+import ScanReportPage from './pages/ScanReportPage';
 import { useAuth } from './context/AuthContext';
 
 export default function App() {
@@ -22,6 +23,7 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [successOrderId, setSuccessOrderId] = useState('');
+  const [currentScanId, setCurrentScanId] = useState('');
   const [loginModalOpen, setLoginModalOpen] = useState(false);
   const [emergencyModalOpen, setEmergencyModalOpen] = useState(false);
   const { currentUser } = useAuth();
@@ -40,6 +42,17 @@ export default function App() {
         if (orderId) {
           setSuccessOrderId(orderId);
           setCurrentPage('order-success');
+          return;
+        }
+      }
+
+      // Check scan report route #scan/:id or #report/:id
+      if (cleanPath.startsWith('scan/') || cleanPath.startsWith('report/')) {
+        const parts = fullHash.split('/');
+        const id = parts[1];
+        if (id) {
+          setCurrentScanId(id);
+          setCurrentPage('scan-report');
           return;
         }
       }
@@ -111,6 +124,22 @@ export default function App() {
       <LoginPage 
         onLoginSuccess={(user) => navigateTo('dashboard')}
         onExitToSite={() => navigateTo('home')}
+      />
+    );
+  }
+
+  // Dedicated Full-Screen Audit Report Page
+  if (currentPage === 'scan-report') {
+    return (
+      <ScanReportPage
+        scanId={currentScanId}
+        onBack={() => {
+          if (currentUser) {
+            navigateTo('dashboard');
+          } else {
+            navigateTo('home');
+          }
+        }}
       />
     );
   }
