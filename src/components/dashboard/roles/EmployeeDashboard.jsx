@@ -18,12 +18,24 @@ import {
   Zap, 
   AlertCircle,
   HelpCircle,
-  Laptop
+  Laptop,
+  Package,
+  Shield,
+  ExternalLink
 } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
+import { useStore } from '../../../context/StoreContext';
+import { formatINR } from '../../../data/mockStoreData';
 
 export default function EmployeeDashboard() {
   const { currentUser, addEmployeeSearch } = useAuth();
+  const { products = [], allocations = [] } = useStore();
+  const [activeSessionNotice, setActiveSessionNotice] = useState(null);
+
+  const myCompanyId = currentUser?.companyId || currentUser?.company_id;
+  const myAllocations = (Array.isArray(allocations) ? allocations : (allocations?._rawList || [])).filter(a => 
+    a.userId === currentUser?.id || a.user_id === currentUser?.id
+  );
 
   // 1. Password Generator State
   const [passwordLength, setPasswordLength] = useState(20);
@@ -182,7 +194,98 @@ export default function EmployeeDashboard() {
         </div>
       </div>
 
-      {/* Grid: Password Generator & Password Strength Analyzer */}
+      {/* Assigned Cybersecurity Products & Software Licenses */}
+      <div className="p-4 sm:p-6 bg-[#0B0F19] border border-cyan-500/30 rounded-2xl space-y-4 shadow-xl relative overflow-hidden">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h2 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+              <Package className="w-5 h-5 text-cyan-400" />
+              <span>Assigned Security Tooling & Enterprise Licenses</span>
+            </h2>
+            <p className="text-xs text-slate-400 mt-0.5">
+              Software suites provisioned directly to your workstation by <span className="text-cyan-300 font-semibold">{currentUser?.companyName || 'your Company Manager'}</span>.
+            </p>
+          </div>
+          <span className="text-xs font-mono font-bold text-cyan-400 bg-cyan-500/10 border border-cyan-500/30 px-3 py-1 rounded-xl self-start sm:self-auto">
+            {myAllocations.length} Active License{myAllocations.length === 1 ? '' : 's'}
+          </span>
+        </div>
+
+        {activeSessionNotice && (
+          <div className="p-3 bg-cyan-950/80 border border-cyan-500/50 rounded-xl text-xs text-cyan-200 flex items-center gap-2 animate-fadeIn font-mono">
+            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+            <span>{activeSessionNotice}</span>
+          </div>
+        )}
+
+        {myAllocations.length === 0 ? (
+          <div className="p-6 bg-slate-900/50 border border-slate-800 rounded-xl text-center space-y-2">
+            <Shield className="w-8 h-8 text-slate-600 mx-auto" />
+            <p className="text-xs text-slate-400">
+              No software suites currently allocated to your user account.
+            </p>
+            <p className="text-[11px] text-slate-500 font-mono">
+              Contact your Company Manager to provision seat licenses for Cloud Armor, Red Team, or Web Scanner.
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5 pt-1">
+            {myAllocations.map((alloc) => {
+              const prodId = alloc.productId || alloc.product_id;
+              const prodObj = (products || []).find(p => p.id === prodId);
+              const pName = prodObj?.name || alloc.productName || alloc.product_name || prodId;
+              const pPrice = prodObj?.price || alloc.productPrice || 4999;
+              const pCategory = prodObj?.categoryName || 'Enterprise Security Suite';
+
+              return (
+                <div 
+                  key={alloc.id || prodId}
+                  className="bg-[#080B11] border border-cyan-500/30 hover:border-cyan-500/60 rounded-xl p-4 flex flex-col justify-between shadow-lg transition-all group"
+                >
+                  <div className="space-y-2">
+                    <div className="flex items-start justify-between gap-2">
+                      <span className="px-2 py-0.5 rounded text-[9px] font-mono font-bold bg-cyan-500/10 text-cyan-300 border border-cyan-500/30 uppercase">
+                        {pCategory}
+                      </span>
+                      <span className="flex items-center gap-1 text-[10px] font-mono text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                        ACTIVE
+                      </span>
+                    </div>
+
+                    <h4 className="text-sm font-bold text-white group-hover:text-cyan-300 transition-colors leading-snug">
+                      {pName}
+                    </h4>
+
+                    <p className="text-xs text-slate-400 leading-relaxed line-clamp-2">
+                      {prodObj?.description || 'Full operational telemetry, diagnostic testing, and active threat containment.'}
+                    </p>
+                  </div>
+
+                  <div className="pt-3 border-t border-slate-800/80 mt-3 flex items-center justify-between">
+                    <span className="text-[10px] font-mono text-slate-500">
+                      License: <span className="text-slate-300 font-bold">{formatINR(pPrice)}</span>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setActiveSessionNotice(`Authenticated live session active for "${pName}". Workstation telemetry linked.`);
+                        setTimeout(() => setActiveSessionNotice(null), 4000);
+                      }}
+                      className="px-2.5 py-1 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 rounded-lg text-xs font-semibold flex items-center gap-1 transition-all cursor-pointer"
+                    >
+                      <ExternalLink className="w-3 h-3" />
+                      <span>Launch Tool</span>
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+            {/* Grid: Password Generator & Password Strength Analyzer */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         
         {/* Tool 1: Interactive Password Generator */}

@@ -1195,7 +1195,20 @@ app.get('/api/orders', async (req, res) => {
       paymentStatus: o.payment_status,
       orderStatus: o.order_status,
       totalAmount: parseFloat(o.total_amount),
-      items: o.items || [],
+      items: (o.items || []).map(it => {
+        const prodId = it.productId || it.product_id || it.id;
+        return {
+          ...it,
+          id: prodId,
+          productId: prodId,
+          product_id: prodId,
+          name: it.name || prodId,
+          price: Number(it.price) || 0,
+          quantity: it.quantity || 1,
+          billingCycle: it.billingCycle || it.billing_cycle || 'Monthly',
+          maxSeats: it.maxSeats || it.allocated_seats || 10
+        };
+      }),
       razorpayOrderId: o.razorpay_order_id,
       razorpayPaymentId: o.razorpay_payment_id,
       razorpaySignature: o.razorpay_signature,
@@ -1510,6 +1523,42 @@ app.get('/api/allocations/:companyId', async (req, res) => {
         userRoleLabel: u.role_label || '',
         productName: p.name || '',
         product_name: p.name || '',
+        productPrice: p.price || 0,
+        createdAt: r.created_at
+      };
+    });
+
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Get all seat allocations for a specific user
+app.get('/api/allocations/user/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const allocations = await ProductAllocation.find({ user_id: userId }).sort({ created_at: -1 }).lean();
+    const prodIds = [...new Set(allocations.map(a => a.product_id))];
+    const products = await Product.find({ id: { $in: prodIds } }).lean();
+    const prodMap = new Map(products.map(p => [p.id, p]));
+
+    const result = allocations.map(r => {
+      const p = prodMap.get(r.product_id) || {};
+      return {
+        id: r.id,
+        companyId: r.company_id,
+        company_id: r.company_id,
+        productId: r.product_id,
+        product_id: r.product_id,
+        userId: r.user_id,
+        user_id: r.user_id,
+        productName: p.name || '',
+        product_name: p.name || '',
+        productPrice: p.price || 0,
+        features: p.features || [],
+        billingCycle: p.billing_cycle || 'Monthly',
+        allocatedAt: r.allocated_at,
         createdAt: r.created_at
       };
     });
@@ -1523,32 +1572,60 @@ app.get('/api/allocations/:companyId', async (req, res) => {
 // Assign a product seat to a user
 app.post('/api/allocations/assign', async (req, res) => {
   try {
-    const { companyId, productId, userId } = req.body;
-    if (!companyId || !productId || !userId) {
+    const targetCompId = req.body.companyId || req.body.company_id;
+    const targetProdId = req.body.productId || req.body.product_id;
+    const targetUserId = req.body.userId || req.body.user_id;
+
+    if (!targetCompId || !targetProdId || !targetUserId) {
       return res.status(400).json({ error: 'companyId, productId, and userId are required' });
     }
 
     let alloc = await ProductAllocation.findOne({
-      company_id: companyId,
-      product_id: productId,
-      user_id: userId
+      company_id: targetCompId,
+      product_id: targetProdId,
+      user_id: targetUserId
     });
 
     if (!alloc) {
       alloc = await ProductAllocation.create({
-        id: `alloc-${Date.now().toString(36)}`,
-        company_id: companyId,
-        product_id: productId,
-        user_id: userId,
-        allocated_at: new Date()
+        id: `alloc-${Date.now().toString(36)}-${Math.floor(Math.random() * 1000)}`,
+        company_id: targetCompId,
+        product_id: targetProdId,
+        user_id: targetUserId,
+        allocated_at: new Date(),
+        created_at: new Date()
       });
     }
 
     // Refresh company active_seats counter
-    const distinctUsers = await ProductAllocation.distinct('user_id', { company_id: companyId });
-    await Company.updateOne({ id: companyId }, { $set: { active_seats: distinctUsers.length } });
+    const distinctUsers = await ProductAllocation.distinct('user_id', { company_id: targetCompId });
+    await Company.updateOne({ id: targetCompId }, { $set: { active_seats: distinctUsers.length } });
 
-    res.json({ success: true, allocation: alloc });
+    // Return enriched allocation object for instant frontend consumption
+    const [user, product] = await Promise.all([
+      User.findOne({ id: targetUserId }).lean(),
+      Product.findOne({ id: targetProdId }).lean()
+    ]);
+
+    const enrichedAllocation = {
+      id: alloc.id,
+      companyId: alloc.company_id,
+      company_id: alloc.company_id,
+      productId: alloc.product_id,
+      product_id: alloc.product_id,
+      userId: alloc.user_id,
+      user_id: alloc.user_id,
+      userName: user?.name || '',
+      userEmail: user?.email || '',
+      userRole: user?.role || '',
+      productName: product?.name || targetProdId,
+      product_name: product?.name || targetProdId,
+      productPrice: product?.price || 0,
+      allocatedAt: alloc.allocated_at,
+      createdAt: alloc.created_at
+    };
+
+    res.json({ success: true, allocation: enrichedAllocation });
   } catch (err) {
     console.error('Seat assignment error:', err);
     res.status(500).json({ error: err.message });
@@ -1558,20 +1635,23 @@ app.post('/api/allocations/assign', async (req, res) => {
 // Revoke a product seat from a user
 app.post('/api/allocations/revoke', async (req, res) => {
   try {
-    const { companyId, productId, userId } = req.body;
-    if (!companyId || !productId || !userId) {
+    const targetCompId = req.body.companyId || req.body.company_id;
+    const targetProdId = req.body.productId || req.body.product_id;
+    const targetUserId = req.body.userId || req.body.user_id;
+
+    if (!targetCompId || !targetProdId || !targetUserId) {
       return res.status(400).json({ error: 'companyId, productId, and userId are required' });
     }
 
     await ProductAllocation.deleteOne({
-      company_id: companyId,
-      product_id: productId,
-      user_id: userId
+      company_id: targetCompId,
+      product_id: targetProdId,
+      user_id: targetUserId
     });
 
     // Recalculate company active_seats counter
-    const distinctUsers = await ProductAllocation.distinct('user_id', { company_id: companyId });
-    await Company.updateOne({ id: companyId }, { $set: { active_seats: distinctUsers.length } });
+    const distinctUsers = await ProductAllocation.distinct('user_id', { company_id: targetCompId });
+    await Company.updateOne({ id: targetCompId }, { $set: { active_seats: distinctUsers.length } });
 
     res.json({ success: true, message: 'Seat revoked successfully' });
   } catch (err) {

@@ -49,15 +49,29 @@ export async function connectDb() {
     try {
       console.log('🔄 Initializing embedded In-Memory MongoDB instance for development & testing...');
       const { MongoMemoryServer } = await import('mongodb-memory-server');
-      memoryServer = await MongoMemoryServer.create({
-        instance: {
-          dbName: MONGODB_DB_NAME
-        }
-      });
+      
+      // Try standard port 27017 first so Compass and VS Code can connect on default URL
+      try {
+        memoryServer = await MongoMemoryServer.create({
+          instance: {
+            port: 27017,
+            dbName: MONGODB_DB_NAME
+          }
+        });
+      } catch (portErr) {
+        memoryServer = await MongoMemoryServer.create({
+          instance: {
+            dbName: MONGODB_DB_NAME
+          }
+        });
+      }
+
       const memoryUri = memoryServer.getUri();
       await mongoose.connect(memoryUri, clientOptions);
       isConnected = true;
       console.log(`✅ Connected to In-Memory MongoDB instance at ${memoryUri} (DB: ${MONGODB_DB_NAME})`);
+      console.log(`🍃 MONGODB GUI ACCESS (Compass / VS Code):`);
+      console.log(`   Connection URI: ${memoryUri}${MONGODB_DB_NAME}`);
       return mongoose.connection;
     } catch (fallbackErr) {
       console.error('❌ Failed to initialize MongoDB connection:', fallbackErr);

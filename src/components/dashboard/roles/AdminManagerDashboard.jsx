@@ -49,6 +49,8 @@ export default function AdminManagerDashboard() {
     products, 
     orders, 
     allocations = [],
+    assignProductSeat,
+    revokeProductSeat,
     addCategory, 
     updateCategory, 
     deleteCategory,
@@ -61,6 +63,32 @@ export default function AdminManagerDashboard() {
   const [activeTab, setActiveTab] = useState('companies'); // default to 'companies' as requested by user
   const [searchQuery, setSearchQuery] = useState('');
   const [toastMessage, setToastMessage] = useState(null);
+
+  const handleAssignSeat = async (companyId, productId, userId, userName) => {
+    try {
+      const prod = (products || []).find(p => p.id === productId);
+      const prodName = prod?.name || productId;
+      if (assignProductSeat) {
+        await assignProductSeat(companyId, productId, userId);
+      }
+      showToast(`🛡️ Assigned "${prodName}" to ${userName}! Real-time DB updated.`);
+    } catch (err) {
+      showToast(`❌ Failed to assign: ${err.message}`);
+    }
+  };
+
+  const handleRevokeSeat = async (companyId, productId, userId, userName) => {
+    try {
+      const prod = (products || []).find(p => p.id === productId);
+      const prodName = prod?.name || productId;
+      if (revokeProductSeat) {
+        await revokeProductSeat(companyId, productId, userId);
+      }
+      showToast(`⚠️ Revoked "${prodName}" from ${userName}. Real-time DB updated.`);
+    } catch (err) {
+      showToast(`❌ Failed to revoke: ${err.message}`);
+    }
+  };
 
   // Normalize Allocations List safely whether it is an Array, has _rawList, or Map
   const allocationsList = Array.isArray(allocations)
@@ -1274,25 +1302,62 @@ export default function AdminManagerDashboard() {
                                             </div>
                                           </div>
 
-                                          {/* Allocated Products */}
-                                          {techAllocations.length > 0 && (
-                                            <div className="pt-2 border-t border-slate-800/60">
-                                              <span className="text-[9px] uppercase font-mono text-slate-500 block mb-1">
-                                                Active Tools Allocated:
+                                          {/* Allocated Products with Real-time Assign / Revoke */}
+                                          <div className="pt-2 border-t border-slate-800/60">
+                                            <div className="flex items-center justify-between mb-1.5 flex-wrap gap-1">
+                                              <span className="text-[9px] uppercase font-mono text-slate-400 font-semibold">
+                                                Active Tools ({techAllocations.length}):
                                               </span>
-                                              <div className="flex flex-wrap gap-1">
+                                              {(() => {
+                                                const assignedProdIds = new Set(techAllocations.map(a => a.productId || a.product_id));
+                                                const unassignedTools = allPurchasedItems.filter(p => !assignedProdIds.has(p.productId || p.id));
+                                                if (unassignedTools.length === 0) return null;
+                                                return (
+                                                  <select
+                                                    onChange={(e) => {
+                                                      if (e.target.value) {
+                                                        handleAssignSeat(comp.id, e.target.value, tech.id, tech.name);
+                                                        e.target.value = '';
+                                                      }
+                                                    }}
+                                                    defaultValue=""
+                                                    className="bg-slate-900 border border-purple-500/40 hover:border-purple-400 text-purple-300 text-[10px] rounded px-2 py-0.5 font-mono cursor-pointer"
+                                                  >
+                                                    <option value="" disabled>+ Assign Tool...</option>
+                                                    {unassignedTools.map(p => (
+                                                      <option key={p.productId || p.id} value={p.productId || p.id}>
+                                                        🛡️ {p.name}
+                                                      </option>
+                                                    ))}
+                                                  </select>
+                                                );
+                                              })()}
+                                            </div>
+                                            {techAllocations.length === 0 ? (
+                                              <span className="text-[10px] text-slate-500 italic block">No tools allocated</span>
+                                            ) : (
+                                              <div className="flex flex-wrap gap-1.5">
                                                 {techAllocations.map(ta => {
                                                   const prodObj = products.find(p => p.id === (ta.productId || ta.product_id));
                                                   const pName = prodObj?.name || ta.productName || ta.product_name || ta.productId;
+                                                  const pId = ta.productId || ta.product_id;
                                                   return (
-                                                    <span key={ta.id || `${ta.productId}-${tech.id}`} className="px-2 py-0.5 rounded text-[10px] bg-purple-950/40 border border-purple-800/40 text-purple-300">
-                                                      🛡️ {pName}
+                                                    <span key={ta.id || `${pId}-${tech.id}`} className="group inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] bg-purple-950/50 border border-purple-800/50 text-purple-300 font-medium">
+                                                      <span>🛡️ {pName}</span>
+                                                      <button
+                                                        type="button"
+                                                        onClick={() => handleRevokeSeat(comp.id, pId, tech.id, tech.name)}
+                                                        className="text-slate-400 hover:text-rose-400 p-0.5 hover:bg-rose-500/20 rounded transition-colors cursor-pointer ml-0.5"
+                                                        title={`Revoke ${pName} from ${tech.name} (Real-time DB)`}
+                                                      >
+                                                        <X className="w-3 h-3 text-rose-400" />
+                                                      </button>
                                                     </span>
                                                   );
                                                 })}
                                               </div>
-                                            </div>
-                                          )}
+                                            )}
+                                          </div>
                                         </div>
                                       );
                                     })}

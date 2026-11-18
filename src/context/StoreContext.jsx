@@ -15,7 +15,7 @@ export function StoreProvider({ children }) {
   const [categories, setCategories] = useState(MOCK_CATEGORIES);
   const [products, setProducts] = useState(MOCK_PRODUCTS);
   const [orders, setOrders] = useState(MOCK_ORDERS);
-  const [allocations, setAllocations] = useState({});
+  const [allocations, setAllocations] = useState([]);
 
   const [cart, setCart] = useState(() => {
     try {
@@ -25,7 +25,7 @@ export function StoreProvider({ children }) {
     return [];
   });
 
-  // Fetch from Neon PostgreSQL
+  // Fetch from MongoDB backend
   const fetchNeonData = async () => {
     try {
       const [catRes, prodRes, ordRes, allocRes] = await Promise.all([
@@ -49,7 +49,10 @@ export function StoreProvider({ children }) {
       }
       if (allocRes && allocRes.ok) {
         const allocData = await allocRes.json();
-        if (Array.isArray(allocData)) setAllocations(allocData);
+        if (Array.isArray(allocData)) {
+          allocData._rawList = allocData;
+          setAllocations(allocData);
+        }
       }
     } catch (e) {
       console.warn('Backend fetch fallback to local:', e.message);
@@ -123,7 +126,7 @@ export function StoreProvider({ children }) {
 
   const clearCart = () => setCart([]);
 
-  // Category CRUD with Neon PostgreSQL
+  // Category CRUD with MongoDB
   const addCategory = async (categoryData) => {
     try {
       const res = await fetch(`${API_URL}/categories`, {
@@ -137,7 +140,7 @@ export function StoreProvider({ children }) {
         return created;
       }
     } catch (e) {
-      console.warn('Neon category creation fallback:', e.message);
+      console.warn('Category creation fallback:', e.message);
     }
   };
 
@@ -159,7 +162,7 @@ export function StoreProvider({ children }) {
     setCategories(prev => prev.filter(c => c.id !== id));
   };
 
-  // Product CRUD with Neon PostgreSQL
+  // Product CRUD with MongoDB
   const addProduct = async (productData) => {
     try {
       const res = await fetch(`${API_URL}/products`, {
@@ -172,7 +175,7 @@ export function StoreProvider({ children }) {
         return;
       }
     } catch (e) {
-      console.warn('Neon product add fallback:', e.message);
+      console.warn('Product add fallback:', e.message);
     }
     setProducts(prev => [productData, ...prev]);
   };
@@ -199,7 +202,7 @@ export function StoreProvider({ children }) {
     }
   };
 
-  // Place Order & Checkout with Neon PostgreSQL
+  // Place Order & Checkout with MongoDB
   const placeOrder = async (orderForm) => {
     if (cart.length === 0) throw new Error('Cart is empty');
 
@@ -275,75 +278,58 @@ export function StoreProvider({ children }) {
     }
   };
 
-  // Fetch allocations for a company from Neon
+  // Fetch allocations for a company from MongoDB
   const fetchCompanyAllocations = async (companyId) => {
     if (!companyId) return;
     try {
       const res = await fetch(`${API_URL}/allocations/${companyId}`);
       if (res.ok) {
         const rows = await res.json();
-        // Convert rows to { [productId]: { assignedUserIds: [] } }
-        const map = {};
-        rows.forEach(r => {
-          const pId = r.product_id || r.productId;
-          const uId = r.user_id || r.userId;
-          if (!map[pId]) map[pId] = { assignedUserIds: [] };
-          if (!map[pId].assignedUserIds.includes(uId)) {
-            map[pId].assignedUserIds.push(uId);
-          }
-        });
         setAllocations(prev => {
-          const prevRaw = (Array.isArray(prev?._rawList) ? prev._rawList : []).filter(a => 
+          const currentList = Array.isArray(prev) ? prev : (Array.isArray(prev?._rawList) ? prev._rawList : []);
+          const otherCompAllocs = currentList.filter(a => 
             !(a.companyId === companyId || a.company_id === companyId)
           );
-          return {
-            ...prev,
-            [companyId]: map,
-            _rawList: [...prevRaw, ...rows]
-          };
+          const combined = [...otherCompAllocs, ...rows];
+          combined._rawList = combined;
+          return combined;
         });
       }
     } catch (e) {
-      console.warn('Neon allocations fetch fallback:', e.message);
+      console.warn('Allocations fetch fallback:', e.message);
     }
   };
 
   const assignProductSeat = async (companyId, productId, userId) => {
     const prodObj = products.find(p => p.id === productId);
-    // Optimistic UI update
+    const newAlloc = {
+      id: `alloc-${Date.now().toString(36)}-${Math.floor(Math.random() * 1000)}`,
+      companyId,
+      company_id: companyId,
+      productId,
+      product_id: productId,
+      userId,
+      user_id: userId,
+      productName: prodObj?.name || productId,
+      product_name: prodObj?.name || productId,
+      productPrice: prodObj?.price || 0,
+      createdAt: new Date()
+    };
+
+    // 1. Instant Optimistic UI update across all components
     setAllocations(prev => {
-      const companyMap = prev[companyId] || {};
-      const prodMap = companyMap[productId] || { assignedUserIds: [] };
-      const currentUsers = prodMap.assignedUserIds || [];
-      const updatedUsers = currentUsers.includes(userId) ? currentUsers : [...currentUsers, userId];
-
-      const prevRaw = Array.isArray(prev?._rawList) ? prev._rawList : [];
-      const newRaw = [
-        ...prevRaw.filter(a => !((a.companyId === companyId || a.company_id === companyId) && (a.productId === productId || a.product_id === productId) && (a.userId === userId || a.user_id === userId))),
-        { 
-          companyId, 
-          company_id: companyId, 
-          productId, 
-          product_id: productId, 
-          userId, 
-          user_id: userId,
-          productName: prodObj?.name || productId,
-          product_name: prodObj?.name || productId
-        }
-      ];
-
-      return {
-        ...prev,
-        [companyId]: {
-          ...companyMap,
-          [productId]: {
-            assignedUserIds: updatedUsers
-          }
-        },
-        _rawList: newRaw
-      };
+      const currentList = Array.isArray(prev) ? prev : (Array.isArray(prev?._rawList) ? prev._rawList : []);
+      const filtered = currentList.filter(a => 
+        !((a.companyId === companyId || a.company_id === companyId) && 
+          (a.productId === productId || a.product_id === productId) && 
+          (a.userId === userId || a.user_id === userId))
+      );
+      const updated = [newAlloc, ...filtered];
+      updated._rawList = updated;
+      return updated;
     });
 
+    // 2. Persist to MongoDB in real-time
     try {
       const res = await fetch(`${API_URL}/allocations/assign`, {
         method: 'POST',
@@ -351,38 +337,28 @@ export function StoreProvider({ children }) {
         body: JSON.stringify({ companyId, productId, userId })
       });
       const data = await res.json();
-      await fetchCompanyAllocations(companyId);
+      fetchNeonData();
       return data;
     } catch (e) {
-      console.warn('Neon seat assignment error:', e.message);
+      console.warn('Seat assignment error:', e.message);
       return { success: false, error: e.message };
     }
   };
 
   const revokeProductSeat = async (companyId, productId, userId) => {
-    // Optimistic UI update
+    // 1. Instant Optimistic UI update across all components
     setAllocations(prev => {
-      const companyMap = prev[companyId] || {};
-      const prodMap = companyMap[productId] || { assignedUserIds: [] };
-      const updatedUsers = (prodMap.assignedUserIds || []).filter(id => id !== userId);
-
-      const prevRaw = Array.isArray(prev?._rawList) ? prev._rawList : [];
-      const newRaw = prevRaw.filter(a => 
-        !((a.companyId === companyId || a.company_id === companyId) && (a.productId === productId || a.product_id === productId) && (a.userId === userId || a.user_id === userId))
+      const currentList = Array.isArray(prev) ? prev : (Array.isArray(prev?._rawList) ? prev._rawList : []);
+      const updated = currentList.filter(a => 
+        !((a.companyId === companyId || a.company_id === companyId) && 
+          (a.productId === productId || a.product_id === productId) && 
+          (a.userId === userId || a.user_id === userId))
       );
-
-      return {
-        ...prev,
-        [companyId]: {
-          ...companyMap,
-          [productId]: {
-            assignedUserIds: updatedUsers
-          }
-        },
-        _rawList: newRaw
-      };
+      updated._rawList = updated;
+      return updated;
     });
 
+    // 2. Persist revocation to MongoDB in real-time
     try {
       const res = await fetch(`${API_URL}/allocations/revoke`, {
         method: 'POST',
@@ -390,15 +366,26 @@ export function StoreProvider({ children }) {
         body: JSON.stringify({ companyId, productId, userId })
       });
       const data = await res.json();
-      await fetchCompanyAllocations(companyId);
+      fetchNeonData();
       return data;
     } catch (e) {
-      console.warn('Neon seat revocation error:', e.message);
+      console.warn('Seat revocation error:', e.message);
       return { success: false, error: e.message };
     }
   };
 
-  // Invite team member via Neon backend
+  // Helper getters for any role dashboard
+  const getUserAllocations = (userId) => {
+    const list = Array.isArray(allocations) ? allocations : (Array.isArray(allocations?._rawList) ? allocations._rawList : []);
+    return list.filter(a => a.userId === userId || a.user_id === userId);
+  };
+
+  const getCompanyAllocations = (companyId) => {
+    const list = Array.isArray(allocations) ? allocations : (Array.isArray(allocations?._rawList) ? allocations._rawList : []);
+    return list.filter(a => a.companyId === companyId || a.company_id === companyId);
+  };
+
+  // Invite team member via MongoDB backend
   const inviteTeamMember = async ({ companyId, companyName, name, email, role, tempPassword }) => {
     try {
       const res = await fetch(`${API_URL}/team/invite`, {
@@ -440,6 +427,8 @@ export function StoreProvider({ children }) {
         assignProductSeat,
         revokeProductSeat,
         fetchCompanyAllocations,
+        getUserAllocations,
+        getCompanyAllocations,
         inviteTeamMember,
         refreshNeon: fetchNeonData
       }}

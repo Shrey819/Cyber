@@ -15,6 +15,8 @@ import {
   ShoppingBag
 } from 'lucide-react';
 import ScanMonitor from '../components/scanner/ScanMonitor';
+import MainframeHero from '../components/MainframeHero';
+import TopFundamentals from '../components/TopFundamentals';
 
 export default function HomePage({ setCurrentPage, openLoginModal }) {
   const [domainInput, setDomainInput] = useState('');
@@ -27,9 +29,40 @@ export default function HomePage({ setCurrentPage, openLoginModal }) {
   };
 
   return (
-    <div className="space-y-20 pb-20">
-      {/* 1. Hero Section */}
-      <section className="relative pt-12 sm:pt-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto text-center space-y-6">
+    <div className="w-full space-y-12 sm:space-y-16 md:space-y-20 pb-20">
+      {/* 1. Full-Width Interactive Gaze Hero Section */}
+      <section className="w-full max-w-[1720px] mx-auto px-3 xs:px-4 sm:px-6 lg:px-8 xl:px-10 pt-2 sm:pt-4">
+        <MainframeHero 
+          eyebrow="AUTONOMOUS CYBER DEFENSE SYSTEM"
+          subheading="Autonomous Threat Intelligence, Zero-Trust Architecture & Continuous Auditing"
+          headline="Engineered for 99.999% sovereign uptime. Real-time autonomous eBPF kernel mitigation and sub-12 minute breach containment. What infrastructure are we safeguarding today?"
+          ctaText="Request Security Audit"
+          videoUrl="/videos/Character_horizontal_eye_scan.mp4"
+          statusBadgeText="Vortex Cyber Sentinel • Biometric Watch"
+          navPills={[
+            { label: "24/7 Managed SOC & MDR", url: "#" },
+            { label: "Offensive Red Teaming", url: "#" },
+            { label: "Cloud DevSecOps & CSPM", url: "#" },
+            { label: "Zero-Trust Network Access", url: "#" },
+          ]}
+          salesEmail="soc@vortex-defense.com"
+          salesEmailText="Reach SOC Desk:"
+          onCtaClick={() => setCurrentPage('services')}
+          onPillClick={() => setCurrentPage('services')}
+        />
+      </section>
+
+      {/* 2. Full-Width Top 10 Cyber Defense Fundamentals Interactive Deck Section */}
+      <section className="w-full max-w-[1720px] mx-auto px-3 xs:px-4 sm:px-6 lg:px-8 xl:px-10">
+        <TopFundamentals 
+          eyebrow="DEFENSE PRINCIPLES"
+          title="TOP 10 CYBER DEFENSE FUNDAMENTALS"
+          subtitle="Core engineering laws governing deterministic zero-trust, kernel-level containment, cryptographic forward secrecy, and enterprise resilience."
+        />
+      </section>
+
+      {/* 3. Cyber Diagnostic & Vulnerability Intelligence Suite */}
+      <section className="relative pt-4 sm:pt-8 px-4 sm:px-6 lg:px-8 max-w-[1720px] mx-auto text-center space-y-6">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 font-bold uppercase">
           <Shield className="w-3.5 h-3.5" />
           Autonomous Cyber Defense & Enterprise Security
@@ -99,8 +132,8 @@ export default function HomePage({ setCurrentPage, openLoginModal }) {
         </div>
       </section>
 
-      {/* 2. Core Pillars (Clean 4 Cards) */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* 4. Core Pillars (Clean 4 Cards) */}
+      <section className="w-full max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center space-y-2 mb-10">
           <h2 className="text-xl sm:text-2xl font-bold text-white">Comprehensive Security Infrastructure</h2>
           <p className="text-xs text-slate-400 max-w-lg mx-auto">
@@ -151,9 +184,10 @@ export default function HomePage({ setCurrentPage, openLoginModal }) {
         </div>
       </section>
 
-      {/* 3. Streamlined B2B Process */}
-      <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 bg-[#0B0F19] border border-slate-800 rounded-2xl p-6 sm:p-10">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center md:text-left">
+      {/* 5. Streamlined B2B Process */}
+      <section className="w-full max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="bg-[#0B0F19] border border-slate-800 rounded-2xl p-6 sm:p-10">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center md:text-left">
           <div className="space-y-2">
             <span className="font-mono text-cyan-400 text-xs font-bold">STEP 01</span>
             <h4 className="text-sm font-bold text-white">Select Defense Modules</h4>
@@ -175,6 +209,7 @@ export default function HomePage({ setCurrentPage, openLoginModal }) {
               Manager assigns scanner and investigation tools to internal developers and employees.
             </p>
           </div>
+        </div>
         </div>
       </section>
     </div>
